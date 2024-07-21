@@ -3,6 +3,8 @@ package com.softhub.softframework.config;
 import com.softhub.softframework.BukkitInitializer;
 import com.softhub.softframework.database.mysql.MysqlConnection;
 import com.softhub.softframework.database.mysql.MysqlManager;
+import com.softhub.softframework.database.sqlite.SQLiteConnection;
+import com.softhub.softframework.database.sqlite.SQLiteManager;
 import lombok.Getter;
 import org.bukkit.configuration.file.FileConfiguration;
 
@@ -34,6 +36,10 @@ public class MysqlConfig {
         poolsize = config.getInt("database.mysql.poolsize", 10);
         if (enabled) {
             MysqlConnection.initialize(host, port, password, username, database, poolsize);
+            BukkitInitializer.setDatabaseManager(new MysqlManager());
+        } else {
+            SQLiteConnection.initialize();
+            BukkitInitializer.setDatabaseManager(new SQLiteManager());
         }
     }
 
