@@ -5,8 +5,10 @@ import com.softhub.softframework.command.CommandRegister;
 import com.softhub.softframework.command.defaultcommand.SoftCommand;
 import com.softhub.softframework.config.MysqlConfig;
 import com.softhub.softframework.config.RedisConfig;
+import com.softhub.softframework.database.DatabaseManager;
 import com.softhub.softframework.inventory.SimpleInventoryListener;
 import lombok.Getter;
+import lombok.Setter;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class BukkitInitializer extends JavaPlugin {
@@ -15,6 +17,9 @@ public final class BukkitInitializer extends JavaPlugin {
     private static BukkitInitializer instance;
     @Getter
     private static Gson gson = new Gson();
+    @Getter
+    @Setter
+    private static DatabaseManager databaseManager;
 
     @Override
     public void onEnable() {

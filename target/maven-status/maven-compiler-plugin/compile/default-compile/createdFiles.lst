@@ -1,3 +1,5 @@
+com\softhub\softframework\database\sqlite\SQLiteManager$PreparedStatementSetter.class
+com\softhub\softframework\database\sqlite\SQLiteConnection.class
 com\softhub\softframework\inventory\SimpleInventory.class
 com\softhub\softframework\task\SimpleTask.class
 com\softhub\softframework\command\CommandRegister.class
@@ -11,6 +13,7 @@ com\softhub\softframework\database\mysql\MysqlManager$PreparedStatementSetter.cl
 com\softhub\softframework\region\SimpleLocation.class
 com\softhub\softframework\inventory\SimpleClickEvent.class
 com\softhub\softframework\inventory\SimpleInventoryProvider.class
+com\softhub\softframework\database\DatabaseManager.class
 com\softhub\softframework\database\redis\message\ProtocolTarget.class
 com\softhub\softframework\inventory\SimpleCloseEvent.class
 com\softhub\softframework\database\redis\message\ProtocolName.class
@@ -30,3 +33,4 @@ com\softhub\softframework\database\mysql\MysqlConnection.class
 com\softhub\softframework\database\mysql\MysqlManager.class
 com\softhub\softframework\command\AnnotatedCommandExecutor.class
 com\softhub\softframework\config\convert\MessageComponent.class
+com\softhub\softframework\database\sqlite\SQLiteManager.class
