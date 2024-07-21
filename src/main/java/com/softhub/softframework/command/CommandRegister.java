@@ -15,10 +15,7 @@ import org.reflections.util.ConfigurationBuilder;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class CommandRegister {
@@ -92,6 +89,7 @@ public class CommandRegister {
                 mainCommand.setAliases(Arrays.asList(commandAnnotation.aliases()));
 
                 List<String> subCommandLabels = new ArrayList<>();
+                List<String> opSubCommandLabels = new ArrayList<>();
                 final Method[] helpMethod = {null};
 
                 for (Method method : cls.getDeclaredMethods()) {
@@ -102,6 +100,9 @@ public class CommandRegister {
                         CommandExecutor executorAnnotation = method.getAnnotation(CommandExecutor.class);
                         if (!executorAnnotation.hideSuggestion()) {
                             subCommandLabels.add(executorAnnotation.label());
+                            if (executorAnnotation.isOp()) {
+                                opSubCommandLabels.add(executorAnnotation.label());
+                            }
                         }
 
                         mainCommand.setExecutor((sender, cmd, label, args) -> {
@@ -116,7 +117,11 @@ public class CommandRegister {
                                 } else {
                                     sender.sendMessage("§e명령어 도움말:");
                                     for (String subLabel : subCommandLabels) {
-                                        sender.sendMessage("§6/" + label + " " + subLabel);
+                                        for (Method m : cls.getDeclaredMethods()) {
+                                            if (m.isAnnotationPresent(CommandExecutor.class) && m.getAnnotation(CommandExecutor.class).label().equals(subLabel)) {
+                                                sender.sendMessage("§6/" + label + " " + subLabel + " - " + m.getAnnotation(CommandExecutor.class).description());
+                                            }
+                                        }
                                     }
                                 }
                                 return true;
@@ -158,7 +163,11 @@ public class CommandRegister {
                                     } else {
                                         sender.sendMessage("§e명령어 도움말:");
                                         for (String subLabel : subCommandLabels) {
-                                            sender.sendMessage("§6/" + label + " " + subLabel);
+                                            for (Method m : cls.getDeclaredMethods()) {
+                                                if (m.isAnnotationPresent(CommandExecutor.class) && m.getAnnotation(CommandExecutor.class).label().equals(subLabel)) {
+                                                    sender.sendMessage("§6/" + label + " " + subLabel + " - " + m.getAnnotation(CommandExecutor.class).description());
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -171,7 +180,8 @@ public class CommandRegister {
 
                 mainCommand.setTabCompleter((sender, command, alias, args) -> {
                     if (args.length == 1) {
-                        return subCommandLabels.stream()
+                        List<String> labels = sender.isOp() ? subCommandLabels : subCommandLabels.stream().filter(lbl -> !opSubCommandLabels.contains(lbl)).collect(Collectors.toList());
+                        return labels.stream()
                                 .filter(lbl -> lbl.toLowerCase().startsWith(args[0].toLowerCase()))
                                 .collect(Collectors.toList());
                     }
