@@ -18,14 +18,15 @@ public class MysqlManager implements DatabaseManager {
         void setValues(PreparedStatement preparedStatement) throws SQLException;
     }
 
-    private CompletableFuture<Void> executeUpdate(String sql, PreparedStatementSetter setter) {
-        CompletableFuture<Void> future = new CompletableFuture<>();
+    private CompletableFuture<Integer> executeUpdate(String sql, PreparedStatementSetter setter) {
+        CompletableFuture<Integer> future = new CompletableFuture<>();
         SimpleAsync.async(() -> {
             try (Connection conn = MysqlConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
                 setter.setValues(stmt);
-                stmt.executeUpdate();
-                future.complete(null);
+                int rowsUpdated = stmt.executeUpdate();
+                future.complete(rowsUpdated);
             } catch (SQLException e) {
+                e.printStackTrace();
                 future.completeExceptionally(e);
             }
         });
@@ -33,7 +34,8 @@ public class MysqlManager implements DatabaseManager {
     }
 
     private <T> CompletableFuture<List<T>> executeQueryList(String sql, ResultSetExtractor<T> extractor, Object... params) {
-        return CompletableFuture.supplyAsync(() -> {
+        CompletableFuture<List<T>> future = new CompletableFuture<>();
+        SimpleAsync.async(() -> {
             try (Connection connection = MysqlConnection.getConnection();
                  PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
 
@@ -44,19 +46,23 @@ public class MysqlManager implements DatabaseManager {
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     List<T> result = new ArrayList<>();
                     while (resultSet.next()) {
-                        result.add(extractor.extractData(resultSet));
+                        T extractedData = extractor.extractData(resultSet);
+                        result.add(extractedData);
                     }
-                    return result;
+                    future.complete(result);
                 }
 
             } catch (SQLException e) {
-                throw new RuntimeException("Error executing query: " + sql, e);
+                e.printStackTrace();
+                future.completeExceptionally(e);
             }
         });
+        return future;
     }
 
     private <T> CompletableFuture<T> executeQuerySingle(String sql, ResultSetExtractor<T> extractor, Object... params) {
-        return CompletableFuture.supplyAsync(() -> {
+        CompletableFuture<T> future = new CompletableFuture<>();
+        SimpleAsync.async(() -> {
             try (Connection connection = MysqlConnection.getConnection();
                  PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
 
@@ -66,25 +72,30 @@ public class MysqlManager implements DatabaseManager {
 
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     if (resultSet.next()) {
-                        return extractor.extractData(resultSet);
+                        T result = extractor.extractData(resultSet);
+                        future.complete(result);
+                        return;
                     }
-                    return null;
+                    future.complete(null);
                 }
 
             } catch (SQLException e) {
-                throw new RuntimeException("Error executing query: " + sql, e);
+                e.printStackTrace();
+                future.completeExceptionally(e);
             }
         });
+        return future;
     }
+
 
     @Override
     public CompletableFuture<Void> deleteTable(String table) {
-        return executeUpdate("DROP TABLE IF EXISTS " + table, stmt -> {});
+        return executeUpdate("DROP TABLE IF EXISTS " + table, stmt -> {}).thenApply(result -> null);
     }
 
     @Override
     public CompletableFuture<Void> truncateTable(String table) {
-        return executeUpdate("TRUNCATE TABLE " + table, stmt -> {});
+        return executeUpdate("TRUNCATE TABLE " + table, stmt -> {}).thenApply(result -> null);
     }
 
     @Override
@@ -123,10 +134,21 @@ public class MysqlManager implements DatabaseManager {
 
     @Override
     public CompletableFuture<Void> set(String selected, Object object, String column, String logic_gate, String data, String table) {
-        String sql = "UPDATE " + table + " SET " + selected + " = ? WHERE " + column + " " + logic_gate + " ?";
-        return executeUpdate(sql, stmt -> {
+        String updateSql = "UPDATE " + table + " SET " + selected + " = ? WHERE " + column + " " + logic_gate + " ?";
+        String insertSql = "INSERT INTO " + table + " (" + selected + ", " + column + ") VALUES (?, ?)";
+
+        return executeUpdate(updateSql, stmt -> {
             stmt.setObject(1, object);
             stmt.setString(2, data);
+        }).thenCompose(result -> {
+            if (result.equals(0)) {
+                return executeUpdate(insertSql, stmt -> {
+                    stmt.setObject(1, object);
+                    stmt.setString(2, data);
+                }).thenApply(insertResult -> null);
+            } else {
+                return CompletableFuture.completedFuture(null);
+            }
         });
     }
 
@@ -136,7 +158,7 @@ public class MysqlManager implements DatabaseManager {
         String sql = "UPDATE " + table + " SET " + selected + " = ? WHERE " + whereClause;
         return executeUpdate(sql, stmt -> {
             stmt.setObject(1, object);
-        });
+        }).thenApply(result -> null);
     }
 
     @Override
@@ -144,13 +166,13 @@ public class MysqlManager implements DatabaseManager {
         String sql = "DELETE FROM " + table + " WHERE " + column + " " + logic_gate + " ?";
         return executeUpdate(sql, stmt -> {
             stmt.setString(1, data);
-        });
+        }).thenApply(result -> null);
     }
 
     @Override
     public CompletableFuture<Void> insertData(String columns, String values, String table) {
         String sql = "INSERT INTO " + table + " (" + columns + ") VALUES (" + values + ")";
-        return executeUpdate(sql, stmt -> {});
+        return executeUpdate(sql, stmt -> {}).thenApply(result -> null);
     }
 
     @Override
@@ -159,8 +181,9 @@ public class MysqlManager implements DatabaseManager {
         return executeUpdate(sql, stmt -> {
             stmt.setString(1, data);
             stmt.setObject(2, object);
-        });
+        }).thenApply(result -> null);
     }
+
 
     @Override
     public CompletableFuture<Boolean> exists(String column, String data, String table) {
@@ -182,7 +205,7 @@ public class MysqlManager implements DatabaseManager {
     @Override
     public CompletableFuture<Void> createTable(String table, String columns) {
         String sql = "CREATE TABLE IF NOT EXISTS " + table + " (" + columns + ")";
-        return executeUpdate(sql, stmt -> {});
+        return executeUpdate(sql, stmt -> {}).thenApply(result -> null);
     }
 
     @Override
