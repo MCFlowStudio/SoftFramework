@@ -23,6 +23,7 @@ com\softhub\softframework\command\defaultcommand\SoftCommand.class
 com\softhub\softframework\config\MysqlConfig.class
 com\softhub\softframework\command\CommandHelp.class
 com\softhub\softframework\BukkitInitializer.class
+com\softhub\softframework\database\cache\CacheStorage.class
 com\softhub\softframework\database\redis\message\ProtocolType.class
 com\softhub\softframework\region\SimpleWorld.class
 com\softhub\softframework\inventory\SimpleInventoryListener.class
