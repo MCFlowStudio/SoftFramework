@@ -2,6 +2,7 @@ package com.softhub.softframework.inventory;
 
 import com.softhub.softframework.item.SimpleItem;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -20,8 +21,8 @@ public class SimpleInventoryListener implements Listener {
                 SimpleClickEvent clickEvent = new SimpleClickEvent(
                         (Player) event.getWhoClicked(),
                         event.getSlot(),
-                        new SimpleItem(event.getCurrentItem()),
-                        new SimpleItem(event.getCursor()),
+                        event.getCurrentItem() != null ? new SimpleItem(event.getCurrentItem()) : new SimpleItem(Material.AIR),
+                        event.getCursor() != null ? new SimpleItem(event.getCursor()) : new SimpleItem(Material.AIR),
                         simpleInventory,
                         event.getInventory()
                 );
