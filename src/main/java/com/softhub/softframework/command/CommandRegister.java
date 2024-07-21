@@ -6,69 +6,19 @@ import org.bukkit.command.CommandMap;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.reflections.Reflections;
-import org.reflections.scanners.Scanners;
-import org.reflections.scanners.SubTypesScanner;
-import org.reflections.util.ClasspathHelper;
-import org.reflections.util.ConfigurationBuilder;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class CommandRegister {
 
     private static JavaPlugin plugin = JavaPlugin.getProvidingPlugin(BukkitInitializer.class);
-
-    public static void registerCommands() {
-        CommandMap commandMap = getCommandMap();
-        if (commandMap == null) {
-            plugin.getLogger().severe("Failed to access CommandMap.");
-            return;
-        }
-
-        for (Class<?> cls : plugin.getClass().getDeclaredClasses()) {
-            if (cls.isAnnotationPresent(Command.class)) {
-                Command commandAnnotation = cls.getAnnotation(Command.class);
-                PluginCommand mainCommand = createPluginCommand(commandAnnotation.name(), plugin);
-                if (mainCommand != null) {
-                    mainCommand.setDescription(commandAnnotation.description());
-                    mainCommand.setUsage(commandAnnotation.usage());
-                    mainCommand.setPermission(commandAnnotation.permission());
-                    mainCommand.setAliases(Arrays.asList(commandAnnotation.aliases()));
-
-                    for (Method method : cls.getDeclaredMethods()) {
-                        if (method.isAnnotationPresent(CommandExecutor.class)) {
-                            CommandExecutor executorAnnotation = method.getAnnotation(CommandExecutor.class);
-                            mainCommand.setExecutor((sender, cmd, label, args) -> {
-                                if (args.length > 0 && args[0].equalsIgnoreCase(executorAnnotation.label())) {
-                                    if (executorAnnotation.isOp() && !sender.isOp()) {
-                                        sender.sendMessage("You do not have the necessary permissions.");
-                                        return true;
-                                    }
-                                    if (!executorAnnotation.permission().isEmpty() && !sender.hasPermission(executorAnnotation.permission())) {
-                                        sender.sendMessage("You do not have the necessary permissions: " + executorAnnotation.permission());
-                                        return true;
-                                    }
-                                    try {
-                                        return (Boolean) method.invoke(cls.newInstance(), sender, args);
-                                    } catch (Exception e) {
-                                        e.printStackTrace();
-                                        sender.sendMessage("Error executing command: " + e.getMessage());
-                                        return false;
-                                    }
-                                }
-                                return false;
-                            });
-                        }
-                    }
-                    commandMap.register(plugin.getName(), mainCommand);
-                }
-            }
-        }
-    }
+    private static final Map<String, PluginCommand> registeredCommands = new HashMap<>();
 
     public static void registerCommands(Object commandInstance) {
         CommandMap commandMap = getCommandMap();
@@ -81,6 +31,13 @@ public class CommandRegister {
 
         if (cls.isAnnotationPresent(Command.class)) {
             Command commandAnnotation = cls.getAnnotation(Command.class);
+
+            // 기존 명령어 해제
+            unregisterCommand(commandAnnotation.name());
+            for (String alias : commandAnnotation.aliases()) {
+                unregisterCommand(alias);
+            }
+
             PluginCommand mainCommand = createPluginCommand(commandAnnotation.name(), plugin);
             if (mainCommand != null) {
                 mainCommand.setDescription(commandAnnotation.description());
@@ -106,21 +63,28 @@ public class CommandRegister {
                         }
 
                         mainCommand.setExecutor((sender, cmd, label, args) -> {
+                            if (!registeredCommands.containsKey(commandAnnotation.name())) {
+                                sender.sendMessage("§c명령어가 등록되지 않았습니다.");
+                                return true;
+                            }
+
                             if (args.length == 0) {
-                                if (helpMethod[0] != null) {
-                                    try {
-                                        helpMethod[0].invoke(commandInstance, sender);
-                                    } catch (Exception e) {
-                                        e.printStackTrace();
-                                        sender.sendMessage("Error executing help command: " + e.getMessage());
-                                    }
-                                } else {
-                                    sender.sendMessage("§e명령어 도움말:");
-                                    for (String subLabel : subCommandLabels) {
-                                        for (Method m : cls.getDeclaredMethods()) {
-                                            if (m.isAnnotationPresent(CommandExecutor.class) && m.getAnnotation(CommandExecutor.class).label().equals(subLabel)) {
-                                                sender.sendMessage("§6/" + label + " " + subLabel + " - " + m.getAnnotation(CommandExecutor.class).description());
+                                sender.sendMessage("§e명령어 도움말:");
+                                for (String subLabel : subCommandLabels) {
+                                    for (Method m : cls.getDeclaredMethods()) {
+                                        if (m.isAnnotationPresent(CommandExecutor.class) && m.getAnnotation(CommandExecutor.class).label().equals(subLabel)) {
+                                            StringBuilder usage = new StringBuilder("§6/" + label + " " + subLabel);
+
+                                            for (Parameter parameter : m.getParameters()) {
+                                                if (parameter.isAnnotationPresent(CommandParameter.class)) {
+                                                    CommandParameter paramAnnotation = parameter.getAnnotation(CommandParameter.class);
+                                                    usage.append(paramAnnotation.required() ? " <" : " [")
+                                                            .append(paramAnnotation.name())
+                                                            .append(paramAnnotation.required() ? ">" : "]");
+                                                }
                                             }
+                                            usage.append(" - ").append(m.getAnnotation(CommandExecutor.class).description());
+                                            sender.sendMessage(usage.toString());
                                         }
                                     }
                                 }
@@ -142,31 +106,72 @@ public class CommandRegister {
                                                 return true;
                                             }
                                             try {
-                                                execMethod.invoke(commandInstance, sender, Arrays.copyOfRange(args, 1, args.length));
+                                                Parameter[] parameters = execMethod.getParameters();
+                                                Object[] invokeArgs = new Object[parameters.length];
+                                                invokeArgs[0] = sender;
+                                                int requiredArgs = 0;
+                                                for (Parameter parameter : parameters) {
+                                                    if (parameter.isAnnotationPresent(CommandParameter.class)) {
+                                                        CommandParameter paramAnnotation = parameter.getAnnotation(CommandParameter.class);
+                                                        int index = paramAnnotation.index();
+                                                        if (paramAnnotation.required()) {
+                                                            requiredArgs++;
+                                                        }
+                                                        if (index < args.length) {
+                                                            String paramValue = args[index];
+                                                            switch (paramAnnotation.type()) {
+                                                                case INTEGER:
+                                                                    invokeArgs[index] = Integer.parseInt(paramValue);
+                                                                    break;
+                                                                case DOUBLE:
+                                                                    invokeArgs[index] = Double.parseDouble(paramValue);
+                                                                    break;
+                                                                case BOOLEAN:
+                                                                    invokeArgs[index] = Boolean.parseBoolean(paramValue);
+                                                                    break;
+                                                                case STRING:
+                                                                default:
+                                                                    invokeArgs[index] = paramValue;
+                                                            }
+                                                        } else if (paramAnnotation.required()) {
+                                                            sender.sendMessage("§c필수 파라미터가 누락되었습니다: " + paramAnnotation.name());
+                                                            return true;
+                                                        }
+                                                    }
+                                                }
+                                                if (args.length < requiredArgs) {
+                                                    sender.sendMessage("§c필수 파라미터가 누락되었습니다.");
+                                                    return true;
+                                                }
+                                                execMethod.invoke(commandInstance, invokeArgs);
                                                 executed = true;
+                                            } catch (NumberFormatException e) {
+                                                sender.sendMessage("§c잘못된 숫자 형식입니다: " + e.getMessage());
+                                                return true;
                                             } catch (Exception e) {
                                                 e.printStackTrace();
                                                 sender.sendMessage("Error executing command: " + e.getMessage());
-                                                return false;
+                                                return true;
                                             }
                                         }
                                     }
                                 }
                                 if (!executed) {
-                                    if (helpMethod[0] != null) {
-                                        try {
-                                            helpMethod[0].invoke(commandInstance, sender);
-                                        } catch (Exception e) {
-                                            e.printStackTrace();
-                                            sender.sendMessage("Error executing help command: " + e.getMessage());
-                                        }
-                                    } else {
-                                        sender.sendMessage("§e명령어 도움말:");
-                                        for (String subLabel : subCommandLabels) {
-                                            for (Method m : cls.getDeclaredMethods()) {
-                                                if (m.isAnnotationPresent(CommandExecutor.class) && m.getAnnotation(CommandExecutor.class).label().equals(subLabel)) {
-                                                    sender.sendMessage("§6/" + label + " " + subLabel + " - " + m.getAnnotation(CommandExecutor.class).description());
+                                    sender.sendMessage("§e명령어 도움말:");
+                                    for (String subLabel : subCommandLabels) {
+                                        for (Method m : cls.getDeclaredMethods()) {
+                                            if (m.isAnnotationPresent(CommandExecutor.class) && m.getAnnotation(CommandExecutor.class).label().equals(subLabel)) {
+                                                StringBuilder usage = new StringBuilder("§6/" + label + " " + subLabel);
+                                                for (Parameter parameter : m.getParameters()) {
+                                                    if (parameter.isAnnotationPresent(CommandParameter.class)) {
+                                                        CommandParameter paramAnnotation = parameter.getAnnotation(CommandParameter.class);
+                                                        usage.append(paramAnnotation.required() ? " <" : " [")
+                                                                .append(paramAnnotation.name())
+                                                                .append(paramAnnotation.required() ? ">" : "]");
+                                                    }
                                                 }
+                                                usage.append(" - ").append(m.getAnnotation(CommandExecutor.class).description());
+                                                sender.sendMessage(usage.toString());
                                             }
                                         }
                                     }
@@ -189,6 +194,8 @@ public class CommandRegister {
                 });
 
                 commandMap.register(plugin.getName(), mainCommand);
+                registeredCommands.put(commandAnnotation.name(), mainCommand);
+
                 for (String alias : commandAnnotation.aliases()) {
                     PluginCommand aliasCommand = createPluginCommand(alias, plugin);
                     if (aliasCommand != null) {
@@ -198,6 +205,7 @@ public class CommandRegister {
                         aliasCommand.setExecutor(mainCommand.getExecutor());
                         aliasCommand.setTabCompleter(mainCommand.getTabCompleter());
                         commandMap.register(plugin.getName(), aliasCommand);
+                        registeredCommands.put(alias, aliasCommand);
                     }
                 }
             } else {
@@ -205,6 +213,53 @@ public class CommandRegister {
             }
         } else {
             System.out.println("Class does not have @Command annotation: " + cls.getName());
+        }
+    }
+
+    private static void unregisterCommand(String commandName) {
+        try {
+            Field commandMapField = Bukkit.getServer().getClass().getDeclaredField("commandMap");
+            commandMapField.setAccessible(true);
+            CommandMap commandMap = (CommandMap) commandMapField.get(Bukkit.getServer());
+
+            for (org.bukkit.command.Command command : commandMap.getKnownCommands().values()) {
+                if (command.getName().equalsIgnoreCase(commandName))
+                    command.unregister(commandMap);
+            }
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void unregisterCommands(Object commandInstance) {
+        CommandMap commandMap = getCommandMap();
+        if (commandMap == null) {
+            plugin.getLogger().severe("Failed to access CommandMap.");
+            return;
+        }
+
+        Class<?> cls = commandInstance.getClass();
+
+        if (cls.isAnnotationPresent(Command.class)) {
+            Command commandAnnotation = cls.getAnnotation(Command.class);
+            String mainCommandName = commandAnnotation.name();
+
+            try {
+                Field knownCommandsField = commandMap.getClass().getDeclaredField("knownCommands");
+                knownCommandsField.setAccessible(true);
+                Map<String, Command> knownCommands = (Map<String, Command>) knownCommandsField.get(commandMap);
+
+                knownCommands.remove(mainCommandName);
+                registeredCommands.remove(mainCommandName);
+
+                for (String alias : commandAnnotation.aliases()) {
+                    knownCommands.remove(alias);
+                    registeredCommands.remove(alias);
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -230,11 +285,6 @@ public class CommandRegister {
             PluginCommand pluginCommand = c.newInstance(name, plugin);
             commandMap.register(name, pluginCommand);
             return pluginCommand;
-
-//            final Field bukkitCommandMap = Bukkit.getServer().getClass().getDeclaredField("commandMap");
-//            Constructor<PluginCommand> constructor = PluginCommand.class.getDeclaredConstructor(String.class, JavaPlugin.class);
-//            constructor.setAccessible(true);
-//            return constructor.newInstance(name, plugin);
         } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | java.lang.reflect.InvocationTargetException e) {
             e.printStackTrace();
             return null;

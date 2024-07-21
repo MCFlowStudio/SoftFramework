@@ -8,73 +8,109 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class CacheStorage {
 
-    private final Map<String, Object> cache = new ConcurrentHashMap<>();
+    private static final Map<String, Object> cache = new ConcurrentHashMap<>();
 
-    private String generateKey(JavaPlugin instance, String key) {
-        return instance.getName() + ":" + key;
+    private static String generateKey(String service, String key) {
+        return service + ":" + key;
     }
 
-    public void set(JavaPlugin instance, String key, Object value) {
-        cache.put(generateKey(instance, key), value);
+    public static void set(String service, String key, Object value) {
+        cache.put(generateKey(service, key), value);
     }
 
-    public void setString(JavaPlugin instance, String key, String value) {
-        cache.put(generateKey(instance, key), value);
+    public static void setString(String service, String key, String value) {
+        cache.put(generateKey(service, key), value);
     }
 
-    public void setInt(JavaPlugin instance, String key, Integer value) {
-        cache.put(generateKey(instance, key), value);
+    public static void setInt(String service, String key, Integer value) {
+        cache.put(generateKey(service, key), value);
     }
 
-    public void setDouble(JavaPlugin instance, String key, Double value) {
-        cache.put(generateKey(instance, key), value);
+    public static void setDouble(String service, String key, Double value) {
+        cache.put(generateKey(service, key), value);
     }
 
-    public void setList(JavaPlugin instance, String key, List<?> value) {
-        cache.put(generateKey(instance, key), value);
+    public static void setList(String service, String key, List<?> value) {
+        cache.put(generateKey(service, key), value);
     }
 
-    public Object get(JavaPlugin instance, String key) {
-        return cache.get(generateKey(instance, key));
+    public static Object get(String service, String key) {
+        return cache.get(generateKey(service, key));
     }
 
-    public String getString(JavaPlugin instance, String key) {
-        Object value = cache.get(generateKey(instance, key));
+    public static Object get(String service, String key, Object defaultValue) {
+        return cache.getOrDefault(generateKey(service, key), defaultValue);
+    }
+
+    public static String getString(String service, String key) {
+        Object value = cache.get(generateKey(service, key));
         if (value instanceof String) {
             return (String) value;
         }
         return null;
     }
 
-    public Integer getInt(JavaPlugin instance, String key) {
-        Object value = cache.get(generateKey(instance, key));
+    public static String getString(String service, String key, String defaultValue) {
+        Object value = cache.get(generateKey(service, key));
+        if (value instanceof String) {
+            return (String) value;
+        }
+        return defaultValue;
+    }
+
+    public static Integer getInt(String service, String key) {
+        Object value = cache.get(generateKey(service, key));
         if (value instanceof Integer) {
             return (Integer) value;
         }
         return null;
     }
 
-    public Double getDouble(JavaPlugin instance, String key) {
-        Object value = cache.get(generateKey(instance, key));
+    public static Integer getInt(String service, String key, Integer defaultValue) {
+        Object value = cache.get(generateKey(service, key));
+        if (value instanceof Integer) {
+            return (Integer) value;
+        }
+        return defaultValue;
+    }
+
+    public static Double getDouble(String service, String key) {
+        Object value = cache.get(generateKey(service, key));
         if (value instanceof Double) {
             return (Double) value;
         }
         return null;
     }
 
-    public List<?> getList(JavaPlugin instance, String key) {
-        Object value = cache.get(generateKey(instance, key));
+    public static Double getDouble(String service, String key, Double defaultValue) {
+        Object value = cache.get(generateKey(service, key));
+        if (value instanceof Double) {
+            return (Double) value;
+        }
+        return defaultValue;
+    }
+
+    public static List<?> getList(String service, String key) {
+        Object value = cache.get(generateKey(service, key));
         if (value instanceof List) {
             return (List<?>) value;
         }
         return null;
     }
 
-    public boolean containsKey(JavaPlugin instance, String key) {
-        return cache.containsKey(generateKey(instance, key));
+    public static List<?> getList(String service, String key, List<?> defaultValue) {
+        Object value = cache.get(generateKey(service, key));
+        if (value instanceof List) {
+            return (List<?>) value;
+        }
+        return defaultValue;
     }
 
-    public void remove(JavaPlugin instance, String key) {
-        cache.remove(generateKey(instance, key));
+    public static boolean containsKey(String service, String key) {
+        return cache.containsKey(generateKey(service, key));
+    }
+
+    public static void remove(String service, String key) {
+        cache.remove(generateKey(service, key));
     }
 }

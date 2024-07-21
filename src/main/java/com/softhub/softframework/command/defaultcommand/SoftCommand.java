@@ -3,6 +3,7 @@ package com.softhub.softframework.command.defaultcommand;
 import com.softhub.softframework.BukkitInitializer;
 import com.softhub.softframework.command.Command;
 import com.softhub.softframework.command.CommandExecutor;
+import com.softhub.softframework.command.CommandParameter;
 import com.softhub.softframework.config.MysqlConfig;
 import com.softhub.softframework.config.RedisConfig;
 import com.softhub.softframework.database.mysql.MysqlConnection;

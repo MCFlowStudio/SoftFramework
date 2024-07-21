@@ -1,9 +1,12 @@
 package com.softhub.softframework.database.sqlite;
 
 import com.softhub.softframework.database.DatabaseManager;
+import com.softhub.softframework.database.ResultSetExtractor;
 import com.softhub.softframework.task.SimpleAsync;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public class SQLiteManager implements DatabaseManager {
@@ -25,6 +28,51 @@ public class SQLiteManager implements DatabaseManager {
             }
         });
         return future;
+    }
+
+    private <T> CompletableFuture<List<T>> executeQueryList(String sql, ResultSetExtractor<T> extractor, Object... params) {
+        return CompletableFuture.supplyAsync(() -> {
+            try (Connection connection = SQLiteConnection.getConnection();
+                 PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+
+                for (int i = 0; i < params.length; i++) {
+                    preparedStatement.setObject(i + 1, params[i]);
+                }
+
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    List<T> result = new ArrayList<>();
+                    while (resultSet.next()) {
+                        result.add(extractor.extractData(resultSet));
+                    }
+                    return result;
+                }
+
+            } catch (SQLException e) {
+                throw new RuntimeException("Error executing query: " + sql, e);
+            }
+        });
+    }
+
+    private <T> CompletableFuture<T> executeQuerySingle(String sql, ResultSetExtractor<T> extractor, Object... params) {
+        return CompletableFuture.supplyAsync(() -> {
+            try (Connection connection = SQLiteConnection.getConnection();
+                 PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+
+                for (int i = 0; i < params.length; i++) {
+                    preparedStatement.setObject(i + 1, params[i]);
+                }
+
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    if (resultSet.next()) {
+                        return extractor.extractData(resultSet);
+                    }
+                    return null;
+                }
+
+            } catch (SQLException e) {
+                throw new RuntimeException("Error executing query: " + sql, e);
+            }
+        });
     }
 
     @Override
@@ -135,5 +183,53 @@ public class SQLiteManager implements DatabaseManager {
     public CompletableFuture<Void> createTable(String table, String columns) {
         String sql = "CREATE TABLE IF NOT EXISTS " + table + " (" + columns + ")";
         return executeUpdate(sql, stmt -> {});
+    }
+
+    @Override
+    public CompletableFuture<List<String>> getStringList(String selected, String table, String column, String logicGate, String data) {
+        String sql = "SELECT " + selected + " FROM " + table + " WHERE " + column + " " + logicGate + " ?";
+        return executeQueryList(sql, rs -> rs.getString(selected), data);
+    }
+
+    @Override
+    public CompletableFuture<String> getString(String selected, String table, String column, String logicGate, String data) {
+        String sql = "SELECT " + selected + " FROM " + table + " WHERE " + column + " " + logicGate + " ?";
+        return executeQuerySingle(sql, rs -> rs.getString(selected), data);
+    }
+
+    @Override
+    public CompletableFuture<List<Integer>> getIntList(String selected, String table, String column, String logicGate, String data) {
+        String sql = "SELECT " + selected + " FROM " + table + " WHERE " + column + " " + logicGate + " ?";
+        return executeQueryList(sql, rs -> rs.getInt(selected), data);
+    }
+
+    @Override
+    public CompletableFuture<Integer> getInt(String selected, String table, String column, String logicGate, String data) {
+        String sql = "SELECT " + selected + " FROM " + table + " WHERE " + column + " " + logicGate + " ?";
+        return executeQuerySingle(sql, rs -> rs.getInt(selected), data);
+    }
+
+    @Override
+    public CompletableFuture<List<Double>> getDoubleList(String selected, String table, String column, String logicGate, String data) {
+        String sql = "SELECT " + selected + " FROM " + table + " WHERE " + column + " " + logicGate + " ?";
+        return executeQueryList(sql, rs -> rs.getDouble(selected), data);
+    }
+
+    @Override
+    public CompletableFuture<Double> getDouble(String selected, String table, String column, String logicGate, String data) {
+        String sql = "SELECT " + selected + " FROM " + table + " WHERE " + column + " " + logicGate + " ?";
+        return executeQuerySingle(sql, rs -> rs.getDouble(selected), data);
+    }
+
+    @Override
+    public CompletableFuture<List<byte[]>> getByteArrayList(String selected, String table, String column, String logicGate, String data) {
+        String sql = "SELECT " + selected + " FROM " + table + " WHERE " + column + " " + logicGate + " ?";
+        return executeQueryList(sql, rs -> rs.getBytes(selected), data);
+    }
+
+    @Override
+    public CompletableFuture<byte[]> getByteArray(String selected, String table, String column, String logicGate, String data) {
+        String sql = "SELECT " + selected + " FROM " + table + " WHERE " + column + " " + logicGate + " ?";
+        return executeQuerySingle(sql, rs -> rs.getBytes(selected), data);
     }
 }

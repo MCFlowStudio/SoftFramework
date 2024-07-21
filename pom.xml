@@ -26,6 +26,9 @@
         <configuration>
           <source>${java.version}</source>
           <target>${java.version}</target>
+            <compilerArgs>
+                <arg>-parameters</arg>
+            </compilerArgs>
         </configuration>
       </plugin>
       <plugin>
@@ -92,11 +95,6 @@
           <groupId>io.lettuce</groupId>
           <artifactId>lettuce-core</artifactId>
           <version>6.4.0.M1</version>
-      </dependency>
-      <dependency>
-          <groupId>org.reflections</groupId>
-          <artifactId>reflections</artifactId>
-          <version>0.10.2</version>
       </dependency>
   </dependencies>
 </project>

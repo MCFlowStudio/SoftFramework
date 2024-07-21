@@ -5,8 +5,11 @@ com\softhub\softframework\task\SimpleTask.class
 com\softhub\softframework\command\CommandRegister.class
 com\softhub\softframework\config\RedisConfig.class
 com\softhub\softframework\task\SimpleAsync.class
+com\softhub\softframework\command\CommandParameter$ParamType.class
+com\softhub\softframework\database\ResultSetExtractor.class
 com\softhub\softframework\region\SimpleChunk.class
 com\softhub\softframework\command\Command.class
+com\softhub\softframework\command\CommandRegister$1.class
 com\softhub\softframework\config\ConfigManager.class
 com\softhub\softframework\database\redis\message\ProtocolMessage.class
 com\softhub\softframework\database\mysql\MysqlManager$PreparedStatementSetter.class
@@ -15,9 +18,11 @@ com\softhub\softframework\inventory\SimpleClickEvent.class
 com\softhub\softframework\inventory\SimpleInventoryProvider.class
 com\softhub\softframework\database\DatabaseManager.class
 com\softhub\softframework\database\redis\message\ProtocolTarget.class
+com\softhub\softframework\command\CommandParameter.class
 com\softhub\softframework\inventory\SimpleCloseEvent.class
 com\softhub\softframework\database\redis\message\ProtocolName.class
 com\softhub\softframework\database\redis\RedisManager$1.class
+com\softhub\softframework\SoftFramework.class
 com\softhub\softframework\command\CommandExecutor.class
 com\softhub\softframework\command\defaultcommand\SoftCommand.class
 com\softhub\softframework\config\MysqlConfig.class
