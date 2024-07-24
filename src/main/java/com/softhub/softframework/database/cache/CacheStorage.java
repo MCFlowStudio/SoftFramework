@@ -14,6 +14,19 @@ public class CacheStorage {
         return service + ":" + key;
     }
 
+    public static Map<String, Object> getAll(String service) {
+        Map<String, Object> serviceData = new ConcurrentHashMap<>();
+        String prefix = service + ":";
+        for (Map.Entry<String, Object> entry : cache.entrySet()) {
+            if (entry.getKey().startsWith(prefix)) {
+                String key = entry.getKey().substring(prefix.length());
+                serviceData.put(key, entry.getValue());
+            }
+        }
+        return serviceData;
+    }
+
+
     public static void set(String service, String key, Object value) {
         cache.put(generateKey(service, key), value);
     }

@@ -1,9 +1,14 @@
 package com.softhub.softframework.command;
 
 import com.softhub.softframework.BukkitInitializer;
+import com.softhub.softframework.config.convert.MessageComponent;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.event.ClickEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandMap;
 import org.bukkit.command.PluginCommand;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -68,23 +73,60 @@ public class CommandRegister {
                                 return true;
                             }
 
+                            if (args.length == 0 && helpMethod[0] != null) {
+                                try {
+                                    helpMethod[0].invoke(commandInstance, sender);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                    sender.sendMessage("Error executing help command: " + e.getMessage());
+                                }
+                                return true;
+                            }
+
                             if (args.length == 0) {
-                                sender.sendMessage("§e명령어 도움말:");
+                                sender.sendMessage(MessageComponent.formatMessage(BukkitInitializer.getInstance().getConfig(), "command_help"));
                                 for (String subLabel : subCommandLabels) {
                                     for (Method m : cls.getDeclaredMethods()) {
                                         if (m.isAnnotationPresent(CommandExecutor.class) && m.getAnnotation(CommandExecutor.class).label().equals(subLabel)) {
-                                            StringBuilder usage = new StringBuilder("§6/" + label + " " + subLabel);
+                                            CommandExecutor execAnnotation = m.getAnnotation(CommandExecutor.class);
+
+                                            if (execAnnotation.isOp() && !sender.isOp()) {
+                                                continue;
+                                            }
+
+                                            if (!execAnnotation.permission().isEmpty() && !sender.hasPermission(execAnnotation.permission())) {
+                                                continue;
+                                            }
+
+                                            StringBuilder usage = new StringBuilder("/" + label + " " + subLabel);
+                                            boolean hasParameters = false;
 
                                             for (Parameter parameter : m.getParameters()) {
                                                 if (parameter.isAnnotationPresent(CommandParameter.class)) {
+                                                    hasParameters = true;
                                                     CommandParameter paramAnnotation = parameter.getAnnotation(CommandParameter.class);
                                                     usage.append(paramAnnotation.required() ? " <" : " [")
                                                             .append(paramAnnotation.name())
                                                             .append(paramAnnotation.required() ? ">" : "]");
                                                 }
                                             }
-                                            usage.append(" - ").append(m.getAnnotation(CommandExecutor.class).description());
-                                            sender.sendMessage(usage.toString());
+
+                                            usage.append(" - ").append(execAnnotation.description());
+                                            TextComponent messageComponent = Component.text(usage.toString());
+
+                                            Component message = MessageComponent.formatMessage(BukkitInitializer.getInstance().getConfig(), "command_arg_help", usage.toString());
+
+                                            if (hasParameters) {
+                                                message = message.clickEvent(ClickEvent.suggestCommand("/" + label + " " + subLabel));
+                                            } else {
+                                                message = message.clickEvent(ClickEvent.runCommand("/" + label + " " + subLabel));
+                                            }
+
+                                            if (sender instanceof Player) {
+                                                ((Player) sender).sendMessage(message);
+                                            } else {
+                                                sender.sendMessage(message);
+                                            }
                                         }
                                     }
                                 }
@@ -98,11 +140,11 @@ public class CommandRegister {
                                         CommandExecutor execAnnotation = execMethod.getAnnotation(CommandExecutor.class);
                                         if (args[0].equalsIgnoreCase(execAnnotation.label())) {
                                             if (execAnnotation.isOp() && !sender.isOp()) {
-                                                sender.sendMessage("§c권한이 부족합니다.");
+                                                sender.sendMessage(MessageComponent.formatMessage(BukkitInitializer.getInstance().getConfig(), "no_permission"));
                                                 return true;
                                             }
                                             if (!execAnnotation.permission().isEmpty() && !sender.hasPermission(execAnnotation.permission())) {
-                                                sender.sendMessage("§c권한이 부족합니다: " + execAnnotation.permission());
+                                                sender.sendMessage(MessageComponent.formatMessage(BukkitInitializer.getInstance().getConfig(), "no_permission"));
                                                 return true;
                                             }
                                             try {
@@ -134,19 +176,19 @@ public class CommandRegister {
                                                                     invokeArgs[index] = paramValue;
                                                             }
                                                         } else if (paramAnnotation.required()) {
-                                                            sender.sendMessage("§c필수 파라미터가 누락되었습니다: " + paramAnnotation.name());
+                                                            sender.sendMessage(MessageComponent.formatMessage(BukkitInitializer.getInstance().getConfig(), "no_args", paramAnnotation.name()));
                                                             return true;
                                                         }
                                                     }
                                                 }
                                                 if (args.length < requiredArgs) {
-                                                    sender.sendMessage("§c필수 파라미터가 누락되었습니다.");
+                                                    sender.sendMessage(MessageComponent.formatMessage(BukkitInitializer.getInstance().getConfig(), "no_arg"));
                                                     return true;
                                                 }
                                                 execMethod.invoke(commandInstance, invokeArgs);
                                                 executed = true;
                                             } catch (NumberFormatException e) {
-                                                sender.sendMessage("§c잘못된 숫자 형식입니다: " + e.getMessage());
+                                                sender.sendMessage(MessageComponent.formatMessage(BukkitInitializer.getInstance().getConfig(), "no_format"));
                                                 return true;
                                             } catch (Exception e) {
                                                 e.printStackTrace();
@@ -157,21 +199,47 @@ public class CommandRegister {
                                     }
                                 }
                                 if (!executed) {
-                                    sender.sendMessage("§e명령어 도움말:");
+                                    sender.sendMessage(MessageComponent.formatMessage(BukkitInitializer.getInstance().getConfig(), "command_help"));
                                     for (String subLabel : subCommandLabels) {
                                         for (Method m : cls.getDeclaredMethods()) {
                                             if (m.isAnnotationPresent(CommandExecutor.class) && m.getAnnotation(CommandExecutor.class).label().equals(subLabel)) {
+                                                CommandExecutor execAnnotation = m.getAnnotation(CommandExecutor.class);
+
+                                                if (execAnnotation.isOp() && !sender.isOp()) {
+                                                    continue;
+                                                }
+
+                                                if (!execAnnotation.permission().isEmpty() && !sender.hasPermission(execAnnotation.permission())) {
+                                                    continue;
+                                                }
+
                                                 StringBuilder usage = new StringBuilder("§6/" + label + " " + subLabel);
+                                                boolean hasParameters = false;
+
                                                 for (Parameter parameter : m.getParameters()) {
                                                     if (parameter.isAnnotationPresent(CommandParameter.class)) {
+                                                        hasParameters = true;
                                                         CommandParameter paramAnnotation = parameter.getAnnotation(CommandParameter.class);
                                                         usage.append(paramAnnotation.required() ? " <" : " [")
                                                                 .append(paramAnnotation.name())
                                                                 .append(paramAnnotation.required() ? ">" : "]");
                                                     }
                                                 }
-                                                usage.append(" - ").append(m.getAnnotation(CommandExecutor.class).description());
-                                                sender.sendMessage(usage.toString());
+
+                                                usage.append(" - ").append(execAnnotation.description());
+                                                TextComponent messageComponent = Component.text(usage.toString());
+
+                                                if (hasParameters) {
+                                                    messageComponent = messageComponent.clickEvent(ClickEvent.suggestCommand("/" + label + " " + subLabel));
+                                                } else {
+                                                    messageComponent = messageComponent.clickEvent(ClickEvent.runCommand("/" + label + " " + subLabel));
+                                                }
+
+                                                if (sender instanceof Player) {
+                                                    ((Player) sender).sendMessage(messageComponent);
+                                                } else {
+                                                    sender.sendMessage(messageComponent);
+                                                }
                                             }
                                         }
                                     }

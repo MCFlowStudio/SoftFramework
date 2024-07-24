@@ -9,6 +9,7 @@ import com.softhub.softframework.database.DatabaseManager;
 import com.softhub.softframework.inventory.SimpleInventoryListener;
 import lombok.Getter;
 import lombok.Setter;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class BukkitInitializer extends JavaPlugin {
@@ -17,6 +18,8 @@ public final class BukkitInitializer extends JavaPlugin {
     private static BukkitInitializer instance;
     @Getter
     private static Gson gson = new Gson();
+    @Getter
+    private static MiniMessage miniMessage = MiniMessage.miniMessage();
     @Getter
     @Setter
     private static DatabaseManager databaseManager;
@@ -29,6 +32,10 @@ public final class BukkitInitializer extends JavaPlugin {
         RedisConfig.init();
         getServer().getPluginManager().registerEvents(new SimpleInventoryListener(), this);
         CommandRegister.registerCommands(new SoftCommand());
+
+        getLogger().info("SoftFramework가 활성화 되었습니다.");
+        getLogger().info("배포되는 무료 플러그인은 https://discord.gg/TERRNC9dhv");
+        getLogger().info("디스코드 방에서 받을 수 있습니다.");
     }
 
     @Override

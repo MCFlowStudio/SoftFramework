@@ -1,8 +1,12 @@
 package com.softhub.softframework.item;
 
+import com.softhub.softframework.BukkitInitializer;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -87,6 +91,46 @@ public class SimpleItem extends ItemStack {
     public Integer getCustomModelData() {
         ItemMeta meta = this.getItemMeta();
         return meta != null ? meta.getCustomModelData() : null;
+    }
+
+    public <T, Z> void setPersistentData(String key, PersistentDataType<T, Z> type, Z value) {
+        ItemMeta meta = this.getItemMeta();
+        if (meta != null) {
+            PersistentDataContainer container = meta.getPersistentDataContainer();
+            NamespacedKey namespacedKey = new NamespacedKey(BukkitInitializer.getInstance(), key);
+            container.set(namespacedKey, type, value);
+            this.setItemMeta(meta);
+        }
+    }
+
+    public <T, Z> Z getPersistentData(String key, PersistentDataType<T, Z> type) {
+        ItemMeta meta = this.getItemMeta();
+        if (meta != null) {
+            PersistentDataContainer container = meta.getPersistentDataContainer();
+            NamespacedKey namespacedKey = new NamespacedKey(BukkitInitializer.getInstance(), key);
+            return container.get(namespacedKey, type);
+        }
+        return null;
+    }
+
+    public void removePersistentData(String key) {
+        ItemMeta meta = this.getItemMeta();
+        if (meta != null) {
+            PersistentDataContainer container = meta.getPersistentDataContainer();
+            NamespacedKey namespacedKey = new NamespacedKey(BukkitInitializer.getInstance(), key);
+            container.remove(namespacedKey);
+            this.setItemMeta(meta);
+        }
+    }
+
+    public <T, Z> boolean hasPersistentData(String key, PersistentDataType<T, Z> type) {
+        ItemMeta meta = this.getItemMeta();
+        if (meta != null) {
+            PersistentDataContainer container = meta.getPersistentDataContainer();
+            NamespacedKey namespacedKey = new NamespacedKey(BukkitInitializer.getInstance(), key);
+            return container.has(namespacedKey, type);
+        }
+        return false;
     }
 
     public ItemStack build() {

@@ -8,6 +8,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.inventory.ItemStack;
 
 public class SimpleInventoryListener implements Listener {
 
@@ -18,11 +19,22 @@ public class SimpleInventoryListener implements Listener {
             SimpleInventoryProvider provider = simpleInventory.getProvider();
 
             if (provider != null) {
+                ItemStack clickedItem = event.getCurrentItem();
+                ItemStack cursorItem = event.getCursor();
+
+                if (event.getClick().isKeyboardClick() && event.getHotbarButton() != -1) {
+                    Player player = (Player) event.getWhoClicked();
+                    ItemStack hotbarItem = player.getInventory().getItem(event.getHotbarButton());
+                    if (hotbarItem != null) {
+                        clickedItem = hotbarItem;
+                    }
+                }
+
                 SimpleClickEvent clickEvent = new SimpleClickEvent(
                         (Player) event.getWhoClicked(),
                         event.getSlot(),
-                        event.getCurrentItem() != null ? new SimpleItem(event.getCurrentItem()) : new SimpleItem(Material.AIR),
-                        event.getCursor() != null ? new SimpleItem(event.getCursor()) : new SimpleItem(Material.AIR),
+                        clickedItem != null ? new SimpleItem(clickedItem) : new SimpleItem(Material.AIR),
+                        cursorItem != null ? new SimpleItem(cursorItem) : new SimpleItem(Material.AIR),
                         simpleInventory,
                         event.getInventory()
                 );

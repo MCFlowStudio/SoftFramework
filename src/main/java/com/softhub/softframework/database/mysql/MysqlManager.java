@@ -5,11 +5,9 @@ import com.softhub.softframework.database.ResultSetExtractor;
 import com.softhub.softframework.task.SimpleAsync;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 
 public class MysqlManager implements DatabaseManager {
 
@@ -30,6 +28,19 @@ public class MysqlManager implements DatabaseManager {
                 future.completeExceptionally(e);
             }
         });
+        return future;
+    }
+
+    private CompletableFuture<Integer> executeUpdateSync(String sql, PreparedStatementSetter setter) {
+        CompletableFuture<Integer> future = new CompletableFuture<>();
+        try (Connection conn = MysqlConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            setter.setValues(stmt);
+            int rowsUpdated = stmt.executeUpdate();
+            future.complete(rowsUpdated);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            future.completeExceptionally(e);
+        }
         return future;
     }
 
@@ -133,6 +144,39 @@ public class MysqlManager implements DatabaseManager {
     }
 
     @Override
+    public CompletableFuture<Void> set(String selected, Object[] values, String column, String logicGate, String conditionValue, String table) {
+        String[] columnArray = selected.split(", ");
+        StringBuilder setClause = new StringBuilder();
+        for (String columnName : columnArray) {
+            if (setClause.length() > 0) {
+                setClause.append(", ");
+            }
+            setClause.append(columnName).append(" = ?");
+        }
+
+        String updateSql = "UPDATE " + table + " SET " + setClause.toString() + " WHERE " + column + " " + logicGate + " ?";
+        String insertSql = "INSERT INTO " + table + " (" + column + ", " + selected + ") VALUES (?, " + String.join(", ", Collections.nCopies(values.length, "?")) + ")";
+
+        return executeUpdate(updateSql, stmt -> {
+            for (int i = 0; i < values.length; i++) {
+                stmt.setObject(i + 1, values[i]);
+            }
+            stmt.setObject(values.length + 1, conditionValue);
+        }).thenCompose(result -> {
+            if (result.equals(0)) {
+                return executeUpdate(insertSql, stmt -> {
+                    stmt.setObject(1, conditionValue);
+                    for (int i = 0; i < values.length; i++) {
+                        stmt.setObject(i + 2, values[i]);
+                    }
+                }).thenApply(insertResult -> null);
+            } else {
+                return CompletableFuture.completedFuture(null);
+            }
+        });
+    }
+
+    @Override
     public CompletableFuture<Void> set(String selected, Object object, String column, String logic_gate, String data, String table) {
         String updateSql = "UPDATE " + table + " SET " + selected + " = ? WHERE " + column + " " + logic_gate + " ?";
         String insertSql = "INSERT INTO " + table + " (" + selected + ", " + column + ") VALUES (?, ?)";
@@ -154,6 +198,68 @@ public class MysqlManager implements DatabaseManager {
 
     @Override
     public CompletableFuture<Void> set(String selected, Object object, String[] where_arguments, String table) {
+        String whereClause = String.join(" AND ", where_arguments);
+        String sql = "UPDATE " + table + " SET " + selected + " = ? WHERE " + whereClause;
+        return executeUpdate(sql, stmt -> {
+            stmt.setObject(1, object);
+        }).thenApply(result -> null);
+    }
+
+    @Override
+    public CompletableFuture<Void> setSync(String selected, Object[] values, String column, String logicGate, String conditionValue, String table) {
+        String[] columnArray = selected.split(", ");
+        StringBuilder setClause = new StringBuilder();
+        for (String columnName : columnArray) {
+            if (setClause.length() > 0) {
+                setClause.append(", ");
+            }
+            setClause.append(columnName).append(" = ?");
+        }
+
+        String updateSql = "UPDATE " + table + " SET " + setClause.toString() + " WHERE " + column + " " + logicGate + " ?";
+        String insertSql = "INSERT INTO " + table + " (" + column + ", " + selected + ") VALUES (?, " + String.join(", ", Collections.nCopies(values.length, "?")) + ")";
+
+        return executeUpdateSync(updateSql, stmt -> {
+            for (int i = 0; i < values.length; i++) {
+                stmt.setObject(i + 1, values[i]);
+            }
+            stmt.setObject(values.length + 1, conditionValue);
+        }).thenCompose(result -> {
+            if (result.equals(0)) {
+                return executeUpdate(insertSql, stmt -> {
+                    stmt.setObject(1, conditionValue);
+                    for (int i = 0; i < values.length; i++) {
+                        stmt.setObject(i + 2, values[i]);
+                    }
+                }).thenApply(insertResult -> null);
+            } else {
+                return CompletableFuture.completedFuture(null);
+            }
+        });
+    }
+
+    @Override
+    public CompletableFuture<Void> setSync(String selected, Object object, String column, String logic_gate, String data, String table) {
+        String updateSql = "UPDATE " + table + " SET " + selected + " = ? WHERE " + column + " " + logic_gate + " ?";
+        String insertSql = "INSERT INTO " + table + " (" + selected + ", " + column + ") VALUES (?, ?)";
+
+        return executeUpdate(updateSql, stmt -> {
+            stmt.setObject(1, object);
+            stmt.setString(2, data);
+        }).thenCompose(result -> {
+            if (result.equals(0)) {
+                return executeUpdate(insertSql, stmt -> {
+                    stmt.setObject(1, object);
+                    stmt.setString(2, data);
+                }).thenApply(insertResult -> null);
+            } else {
+                return CompletableFuture.completedFuture(null);
+            }
+        });
+    }
+
+    @Override
+    public CompletableFuture<Void> setSync(String selected, Object object, String[] where_arguments, String table) {
         String whereClause = String.join(" AND ", where_arguments);
         String sql = "UPDATE " + table + " SET " + selected + " = ? WHERE " + whereClause;
         return executeUpdate(sql, stmt -> {
@@ -254,5 +360,11 @@ public class MysqlManager implements DatabaseManager {
     public CompletableFuture<byte[]> getByteArray(String selected, String table, String column, String logicGate, String data) {
         String sql = "SELECT " + selected + " FROM " + table + " WHERE " + column + " " + logicGate + " ?";
         return executeQuerySingle(sql, rs -> rs.getBytes(selected), data);
+    }
+
+    @Override
+    public <T> CompletableFuture<List<T>> getMultipleColumnsList(String selectedColumns, String table, String column, String logicGate, String data, ResultSetExtractor<T> extractor) {
+        String sql = "SELECT " + selectedColumns + " FROM " + table + " WHERE " + column + " " + logicGate + " ?";
+        return executeQueryList(sql, extractor, data);
     }
 }
