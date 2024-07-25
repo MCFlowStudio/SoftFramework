@@ -43,4 +43,24 @@ public class MessageComponent {
         return component;
     }
 
+    public static String formatTime(int seconds) {
+        int hours = seconds / 3600;
+        int minutes = (seconds % 3600) / 60;
+        int secs = seconds % 60;
+
+        StringBuilder timeString = new StringBuilder();
+
+        if (hours > 0) {
+            timeString.append(hours).append("시간 ");
+        }
+        if (minutes > 0) {
+            timeString.append(minutes).append("분 ");
+        }
+        if (secs > 0 || timeString.length() == 0) {
+            timeString.append(secs).append("초");
+        }
+
+        return timeString.toString().trim();
+    }
+
 }
