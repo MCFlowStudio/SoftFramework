@@ -23,6 +23,7 @@ C:\Users\paper\IdeaProjects\SoftFramework\src\main\java\com\softhub\softframewor
 C:\Users\paper\IdeaProjects\SoftFramework\src\main\java\com\softhub\softframework\command\CommandExecutor.java
 C:\Users\paper\IdeaProjects\SoftFramework\src\main\java\com\softhub\softframework\config\RedisConfig.java
 C:\Users\paper\IdeaProjects\SoftFramework\src\main\java\com\softhub\softframework\database\mysql\MysqlConnection.java
+C:\Users\paper\IdeaProjects\SoftFramework\src\main\java\com\softhub\softframework\command\TabCompleterProvider.java
 C:\Users\paper\IdeaProjects\SoftFramework\src\main\java\com\softhub\softframework\inventory\SimpleCloseEvent.java
 C:\Users\paper\IdeaProjects\SoftFramework\src\main\java\com\softhub\softframework\database\mysql\MysqlManager.java
 C:\Users\paper\IdeaProjects\SoftFramework\src\main\java\com\softhub\softframework\command\AnnotatedCommandExecutor.java

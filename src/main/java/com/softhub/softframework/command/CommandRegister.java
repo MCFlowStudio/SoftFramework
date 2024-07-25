@@ -41,7 +41,6 @@ public class CommandRegister {
         if (cls.isAnnotationPresent(Command.class)) {
             Command commandAnnotation = cls.getAnnotation(Command.class);
 
-            // 기존 명령어 해제
             unregisterCommand(commandAnnotation.name());
             for (String alias : commandAnnotation.aliases()) {
                 unregisterCommand(alias);
@@ -222,7 +221,7 @@ public class CommandRegister {
                                                     continue;
                                                 }
 
-                                                StringBuilder usage = new StringBuilder("§6/" + label + " " + subLabel);
+                                                StringBuilder usage = new StringBuilder("/" + label + " " + subLabel);
                                                 boolean hasParameters = false;
 
                                                 for (Parameter parameter : m.getParameters()) {
@@ -266,8 +265,23 @@ public class CommandRegister {
                         List<String> completions = new ArrayList<>();
 
                         if (args.length == 1) {
-                            List<String> labels = sender.isOp() ? subCommandLabels : subCommandLabels.stream()
-                                    .filter(lbl -> !opSubCommandLabels.contains(lbl))
+                            List<String> labels = subCommandLabels.stream()
+                                    .filter(lbl -> {
+                                        for (Method method : cls.getDeclaredMethods()) {
+                                            if (method.isAnnotationPresent(CommandExecutor.class)) {
+                                                CommandExecutor execAnnotation = method.getAnnotation(CommandExecutor.class);
+                                                if (execAnnotation.label().equalsIgnoreCase(lbl)) {
+                                                    if (execAnnotation.isOp() && !sender.isOp()) {
+                                                        return false;
+                                                    }
+                                                    if (!execAnnotation.permission().isEmpty() && !sender.hasPermission(execAnnotation.permission())) {
+                                                        return false;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        return true;
+                                    })
                                     .collect(Collectors.toList());
 
                             return labels.stream()
@@ -275,7 +289,10 @@ public class CommandRegister {
                                     .collect(Collectors.toList());
                         }
 
+
                         if (tabCompleterProvider != null) {
+                            completions.addAll(tabCompleterProvider.getCompletions(args[0], argIndex, args, sender));
+                        } else {
                             for (Method method : cls.getDeclaredMethods()) {
                                 if (method.isAnnotationPresent(CommandExecutor.class)) {
                                     CommandExecutor execAnnotation = method.getAnnotation(CommandExecutor.class);
@@ -290,7 +307,9 @@ public class CommandRegister {
 
                                         Parameter[] parameters = method.getParameters();
                                         if (argIndex < parameters.length) {
-                                            completions.addAll(tabCompleterProvider.getCompletions(execAnnotation.label(), argIndex, args, sender));
+                                            return Bukkit.getOnlinePlayers().stream()
+                                                    .map(Player::getName)
+                                                    .collect(Collectors.toList());
                                         }
                                     }
                                 }
@@ -303,6 +322,7 @@ public class CommandRegister {
                     }
                     return null;
                 });
+
 
 
                 commandMap.register(plugin.getName(), mainCommand);
@@ -353,33 +373,14 @@ public class CommandRegister {
     }
 
     public static void unregisterCommands(Object commandInstance) {
-        CommandMap commandMap = getCommandMap();
-        if (commandMap == null) {
-            plugin.getLogger().severe("Failed to access CommandMap.");
-            return;
-        }
-
         Class<?> cls = commandInstance.getClass();
 
         if (cls.isAnnotationPresent(Command.class)) {
             Command commandAnnotation = cls.getAnnotation(Command.class);
-            String mainCommandName = commandAnnotation.name();
 
-            try {
-                Field knownCommandsField = commandMap.getClass().getDeclaredField("knownCommands");
-                knownCommandsField.setAccessible(true);
-                Map<String, Command> knownCommands = (Map<String, Command>) knownCommandsField.get(commandMap);
-
-                knownCommands.remove(mainCommandName);
-                registeredCommands.remove(mainCommandName);
-
-                for (String alias : commandAnnotation.aliases()) {
-                    knownCommands.remove(alias);
-                    registeredCommands.remove(alias);
-                }
-
-            } catch (Exception e) {
-                e.printStackTrace();
+            unregisterCommand(commandAnnotation.name());
+            for (String alias : commandAnnotation.aliases()) {
+                unregisterCommand(alias);
             }
         }
     }
