@@ -12,7 +12,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -24,6 +23,11 @@ public class CommandRegister {
 
     private static JavaPlugin plugin = JavaPlugin.getProvidingPlugin(BukkitInitializer.class);
     private static final Map<String, PluginCommand> registeredCommands = new HashMap<>();
+    private static TabCompleterProvider tabCompleterProvider;
+
+    public static void setTabCompleterProvider(TabCompleterProvider provider) {
+        tabCompleterProvider = provider;
+    }
 
     public static void registerCommands(Object commandInstance) {
         CommandMap commandMap = getCommandMap();
@@ -53,6 +57,13 @@ public class CommandRegister {
                 List<String> subCommandLabels = new ArrayList<>();
                 List<String> opSubCommandLabels = new ArrayList<>();
                 final Method[] helpMethod = {null};
+
+                TabCompleterProvider tabCompleterProvider;
+                if (commandAnnotation.tabCompleterProvider() != TabCompleterProvider.class) {
+                    tabCompleterProvider = initTabCompleterProvider(commandAnnotation.tabCompleterProvider());
+                } else {
+                    tabCompleterProvider = null;
+                }
 
                 for (Method method : cls.getDeclaredMethods()) {
                     if (method.isAnnotationPresent(CommandHelp.class)) {
@@ -112,8 +123,6 @@ public class CommandRegister {
                                             }
 
                                             usage.append(" - ").append(execAnnotation.description());
-                                            TextComponent messageComponent = Component.text(usage.toString());
-
                                             Component message = MessageComponent.formatMessage(BukkitInitializer.getInstance().getConfig(), "command_arg_help", usage.toString());
 
                                             if (hasParameters) {
@@ -227,18 +236,18 @@ public class CommandRegister {
                                                 }
 
                                                 usage.append(" - ").append(execAnnotation.description());
-                                                TextComponent messageComponent = Component.text(usage.toString());
+                                                Component message = MessageComponent.formatMessage(BukkitInitializer.getInstance().getConfig(), "command_arg_help", usage.toString());
 
                                                 if (hasParameters) {
-                                                    messageComponent = messageComponent.clickEvent(ClickEvent.suggestCommand("/" + label + " " + subLabel));
+                                                    message = message.clickEvent(ClickEvent.suggestCommand("/" + label + " " + subLabel));
                                                 } else {
-                                                    messageComponent = messageComponent.clickEvent(ClickEvent.runCommand("/" + label + " " + subLabel));
+                                                    message = message.clickEvent(ClickEvent.runCommand("/" + label + " " + subLabel));
                                                 }
 
                                                 if (sender instanceof Player) {
-                                                    ((Player) sender).sendMessage(messageComponent);
+                                                    ((Player) sender).sendMessage(message);
                                                 } else {
-                                                    sender.sendMessage(messageComponent);
+                                                    sender.sendMessage(message);
                                                 }
                                             }
                                         }
@@ -252,14 +261,49 @@ public class CommandRegister {
                 }
 
                 mainCommand.setTabCompleter((sender, command, alias, args) -> {
-                    if (args.length == 1) {
-                        List<String> labels = sender.isOp() ? subCommandLabels : subCommandLabels.stream().filter(lbl -> !opSubCommandLabels.contains(lbl)).collect(Collectors.toList());
-                        return labels.stream()
-                                .filter(lbl -> lbl.toLowerCase().startsWith(args[0].toLowerCase()))
+                    if (args.length > 0) {
+                        int argIndex = args.length - 1;
+                        List<String> completions = new ArrayList<>();
+
+                        if (args.length == 1) {
+                            List<String> labels = sender.isOp() ? subCommandLabels : subCommandLabels.stream()
+                                    .filter(lbl -> !opSubCommandLabels.contains(lbl))
+                                    .collect(Collectors.toList());
+
+                            return labels.stream()
+                                    .filter(lbl -> lbl.toLowerCase().startsWith(args[0].toLowerCase()))
+                                    .collect(Collectors.toList());
+                        }
+
+                        if (tabCompleterProvider != null) {
+                            for (Method method : cls.getDeclaredMethods()) {
+                                if (method.isAnnotationPresent(CommandExecutor.class)) {
+                                    CommandExecutor execAnnotation = method.getAnnotation(CommandExecutor.class);
+                                    if (execAnnotation.label().equalsIgnoreCase(args[0])) {
+                                        if (execAnnotation.isOp() && !sender.isOp()) {
+                                            continue;
+                                        }
+
+                                        if (!execAnnotation.permission().isEmpty() && !sender.hasPermission(execAnnotation.permission())) {
+                                            continue;
+                                        }
+
+                                        Parameter[] parameters = method.getParameters();
+                                        if (argIndex < parameters.length) {
+                                            completions.addAll(tabCompleterProvider.getCompletions(execAnnotation.label(), argIndex, args, sender));
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        return completions.stream()
+                                .filter(completion -> completion.toLowerCase().startsWith(args[argIndex].toLowerCase()))
                                 .collect(Collectors.toList());
                     }
                     return null;
                 });
+
 
                 commandMap.register(plugin.getName(), mainCommand);
                 registeredCommands.put(commandAnnotation.name(), mainCommand);
@@ -281,6 +325,15 @@ public class CommandRegister {
             }
         } else {
             System.out.println("Class does not have @Command annotation: " + cls.getName());
+        }
+    }
+
+    private static TabCompleterProvider initTabCompleterProvider(Class<? extends TabCompleterProvider> providerClass) {
+        try {
+            return providerClass.getDeclaredConstructor().newInstance();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
         }
     }
 

@@ -7,6 +7,7 @@ C:\Users\paper\IdeaProjects\SoftFramework\src\main\java\com\softhub\softframewor
 C:\Users\paper\IdeaProjects\SoftFramework\src\main\java\com\softhub\softframework\config\ConfigManager.java
 C:\Users\paper\IdeaProjects\SoftFramework\src\main\java\com\softhub\softframework\database\DatabaseManager.java
 C:\Users\paper\IdeaProjects\SoftFramework\src\main\java\com\softhub\softframework\task\SimpleTask.java
+C:\Users\paper\IdeaProjects\SoftFramework\src\main\java\com\softhub\softframework\logger\FileLogger.java
 C:\Users\paper\IdeaProjects\SoftFramework\src\main\java\com\softhub\softframework\database\ResultSetExtractor.java
 C:\Users\paper\IdeaProjects\SoftFramework\src\main\java\com\softhub\softframework\inventory\SimpleInventoryProvider.java
 C:\Users\paper\IdeaProjects\SoftFramework\src\main\java\com\softhub\softframework\database\redis\message\ProtocolTarget.java
@@ -27,6 +28,7 @@ C:\Users\paper\IdeaProjects\SoftFramework\src\main\java\com\softhub\softframewor
 C:\Users\paper\IdeaProjects\SoftFramework\src\main\java\com\softhub\softframework\command\AnnotatedCommandExecutor.java
 C:\Users\paper\IdeaProjects\SoftFramework\src\main\java\com\softhub\softframework\command\Command.java
 C:\Users\paper\IdeaProjects\SoftFramework\src\main\java\com\softhub\softframework\item\SimpleItem.java
+C:\Users\paper\IdeaProjects\SoftFramework\src\main\java\com\softhub\softframework\config\convert\ItemConponent.java
 C:\Users\paper\IdeaProjects\SoftFramework\src\main\java\com\softhub\softframework\database\sqlite\SQLiteManager.java
 C:\Users\paper\IdeaProjects\SoftFramework\src\main\java\com\softhub\softframework\command\CommandHelp.java
 C:\Users\paper\IdeaProjects\SoftFramework\src\main\java\com\softhub\softframework\command\defaultcommand\SoftCommand.java

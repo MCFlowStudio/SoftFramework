@@ -1,6 +1,5 @@
 package com.softhub.softframework;
 
-import com.softhub.softframework.config.ConfigManager;
 import com.softhub.softframework.config.MysqlConfig;
 import com.softhub.softframework.database.DatabaseManager;
 

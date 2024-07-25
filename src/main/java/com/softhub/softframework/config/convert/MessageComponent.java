@@ -1,6 +1,5 @@
 package com.softhub.softframework.config.convert;
 
-import com.softhub.softframework.BukkitInitializer;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;

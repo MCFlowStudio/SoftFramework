@@ -3,14 +3,12 @@ package com.softhub.softframework.database.sqlite;
 import com.softhub.softframework.database.DatabaseManager;
 import com.softhub.softframework.database.ResultSetExtractor;
 import com.softhub.softframework.task.SimpleAsync;
-import org.bukkit.Bukkit;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.logging.Level;
 
 public class SQLiteManager implements DatabaseManager {
 

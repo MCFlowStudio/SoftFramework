@@ -14,4 +14,5 @@ public @interface Command {
     String permission() default "";
     String[] aliases() default {};
     boolean isOp() default false;
+    Class<? extends TabCompleterProvider> tabCompleterProvider() default TabCompleterProvider.class;
 }

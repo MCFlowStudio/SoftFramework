@@ -3,7 +3,6 @@ package com.softhub.softframework.inventory;
 import com.softhub.softframework.item.SimpleItem;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
 
 public class SimpleClickEvent {
     private final Player player;

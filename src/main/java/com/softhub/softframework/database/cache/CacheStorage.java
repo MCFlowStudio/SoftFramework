@@ -1,7 +1,5 @@
 package com.softhub.softframework.database.cache;
 
-import org.bukkit.plugin.java.JavaPlugin;
-
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

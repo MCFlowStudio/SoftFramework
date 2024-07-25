@@ -1,7 +1,6 @@
 package com.softhub.softframework.inventory;
 
 import com.softhub.softframework.item.SimpleItem;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
