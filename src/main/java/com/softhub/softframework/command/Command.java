@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE) // 클래스에 적용
+@Target(ElementType.TYPE)
 public @interface Command {
     String name();
     String description() default "No description provided";
@@ -14,5 +14,6 @@ public @interface Command {
     String permission() default "";
     String[] aliases() default {};
     boolean isOp() default false;
+    boolean consoleAvailable() default true;
     Class<? extends TabCompleterProvider> tabCompleterProvider() default TabCompleterProvider.class;
 }

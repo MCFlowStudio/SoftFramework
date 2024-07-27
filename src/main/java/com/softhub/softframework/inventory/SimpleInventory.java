@@ -47,8 +47,4 @@ public class SimpleInventory implements InventoryHolder, Listener {
     public void setItem(int slot, SimpleItem item) {
         this.inventory.setItem(slot, item.build());
     }
-
-    public void update() {
-        // 아이템 재정렬 및 인벤토리 업데이트 로직 추가
-    }
 }

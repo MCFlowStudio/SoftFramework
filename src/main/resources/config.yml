@@ -16,6 +16,7 @@ database:
 messages:
   command_help: '<color:#FFA07A>[SoftProject] 명령어 도움말:'
   command_arg_help: '<color:#FFDAB9>%1%'
+  no_console: '<color:#FF0000>[경고] 콘솔에서 사용할 수 없는 명령어입니다.'
   no_permission: '<color:#FF0000>[경고] 명령어를 실행하기 위한 권한이 부족합니다.'
   no_arg: '<color:#FF0000>[경고] 필수 입력 값이 누락되었습니다.'
   no_args: '<color:#FF0000>[경고] 필수 입력 값인 %1% (이)가 누락되었습니다.'

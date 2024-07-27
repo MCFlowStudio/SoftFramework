@@ -9,7 +9,6 @@ com\softhub\softframework\command\CommandParameter$ParamType.class
 com\softhub\softframework\database\ResultSetExtractor.class
 com\softhub\softframework\region\SimpleChunk.class
 com\softhub\softframework\command\Command.class
-com\softhub\softframework\command\CommandRegister$1.class
 com\softhub\softframework\command\TabCompleterProvider.class
 com\softhub\softframework\config\ConfigManager.class
 com\softhub\softframework\database\redis\message\ProtocolMessage.class

@@ -9,4 +9,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 public @interface CommandHelp {
     String description() default "No description provided";
+    String permission() default "";
+    boolean isOp() default false;
+    boolean consoleAvailable() default true;
 }
