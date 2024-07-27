@@ -2,10 +2,10 @@ name: SoftFramework
 version: '${project.version}'
 main: com.softhub.softframework.BukkitInitializer
 api-version: '1.20'
-website: https://discord.gg/TERRNC9dhv
+website: https://discord.gg/kk4UQstdY9
 
 libraries:
   - com.zaxxer:HikariCP:5.0.1
 
 authors:
-  - sjnu
+  - minhyeok
