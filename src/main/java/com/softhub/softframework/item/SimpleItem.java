@@ -1,6 +1,9 @@
 package com.softhub.softframework.item;
 
 import com.softhub.softframework.BukkitInitializer;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
@@ -8,10 +11,13 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SimpleItem extends ItemStack {
+public class SimpleItem extends ItemStack implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     public SimpleItem(Material material) {
         super(material);
@@ -19,6 +25,10 @@ public class SimpleItem extends ItemStack {
 
     public SimpleItem(ItemStack stack) {
         super(stack);
+    }
+
+    public SimpleItem() {
+        super(Material.AIR);
     }
 
     public void setName(String name) {
@@ -56,6 +66,24 @@ public class SimpleItem extends ItemStack {
             }
             lore.add(line);
             meta.setLore(lore);
+            this.setItemMeta(meta);
+        }
+
+    }
+
+    public void addLore(Component line) {
+        ItemMeta meta = this.getItemMeta();
+        if (meta != null) {
+            List<Component> loreComponents = meta.lore();
+
+            loreComponents.add(line);
+
+            List<Component> lores = new ArrayList<>();
+            for (Component component : loreComponents) {
+                lores.add(component.decoration(TextDecoration.ITALIC, false));
+            }
+
+            meta.lore(lores);
             this.setItemMeta(meta);
         }
     }

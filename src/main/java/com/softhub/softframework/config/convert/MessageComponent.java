@@ -44,12 +44,24 @@ public class MessageComponent {
     }
 
     public static String formatTime(int seconds) {
-        int hours = seconds / 3600;
+        int months = seconds / 2592000;
+        int weeks = (seconds % 2592000) / 604800;
+        int days = (seconds % 604800) / 86400;
+        int hours = (seconds % 86400) / 3600;
         int minutes = (seconds % 3600) / 60;
         int secs = seconds % 60;
 
         StringBuilder timeString = new StringBuilder();
 
+        if (months > 0) {
+            timeString.append(months).append("달 ");
+        }
+        if (weeks > 0) {
+            timeString.append(weeks).append("주 ");
+        }
+        if (days > 0) {
+            timeString.append(days).append("일 ");
+        }
         if (hours > 0) {
             timeString.append(hours).append("시간 ");
         }
@@ -62,5 +74,6 @@ public class MessageComponent {
 
         return timeString.toString().trim();
     }
+
 
 }

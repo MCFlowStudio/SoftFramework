@@ -1,6 +1,7 @@
 package com.softhub.softframework.config.convert;
 
 import com.softhub.softframework.BukkitInitializer;
+import com.softhub.softframework.item.SimpleItem;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Material;
@@ -14,7 +15,7 @@ import java.util.stream.Collectors;
 
 public class ItemConponent {
 
-    public static ItemStack loadItem(FileConfiguration config, String key, Object... args) {
+    public static SimpleItem loadItem(FileConfiguration config, String key, Object... args) {
         String path = "items." + key + ".";
 
         Material type = Material.getMaterial(config.getString(path + "type", "AIR"));
@@ -58,10 +59,10 @@ public class ItemConponent {
 
             item.setItemMeta(meta);
         }
-        return item;
+        return new SimpleItem(item);
     }
 
-    public static ItemStack updateItem(FileConfiguration config, ItemStack originalItem, String key, Object... args) {
+    public static SimpleItem updateItem(FileConfiguration config, ItemStack originalItem, String key, Object... args) {
         String path = "items." + key + ".";
 
         Material type = Material.getMaterial(config.getString(path + "type", "AIR"));
@@ -106,7 +107,7 @@ public class ItemConponent {
 
             originalItem.setItemMeta(originalMeta);
         }
-        return originalItem;
+        return new SimpleItem(originalItem);
     }
 
 }
