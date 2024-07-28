@@ -12,9 +12,7 @@ import org.bukkit.plugin.Plugin;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.softhub.softframework.command.CommandRegister.registeredCommands;
@@ -107,55 +105,57 @@ public class CommandTree {
         return false;
     }
 
-
     private void sendCommandHelp(CommandSender sender, String label) {
         sender.sendMessage(MessageComponent.formatMessage(BukkitInitializer.getInstance().getConfig(), "command_help"));
-        for (String subLabel : subCommandLabels) {
-            for (Method m : cls.getDeclaredMethods()) {
-                if (m.isAnnotationPresent(CommandExecutor.class)) {
-                    CommandExecutor execAnnotation = m.getAnnotation(CommandExecutor.class);
+        Set<String> displayedCommands = new HashSet<>();
 
-                    if (execAnnotation.isOp() && !sender.isOp()) {
-                        continue;
+        for (Method m : cls.getDeclaredMethods()) {
+            if (m.isAnnotationPresent(CommandExecutor.class)) {
+                CommandExecutor execAnnotation = m.getAnnotation(CommandExecutor.class);
+                String subLabel = execAnnotation.label();
+
+                if (execAnnotation.isOp() && !sender.isOp()) {
+                    continue;
+                }
+
+                if (!execAnnotation.permission().isEmpty() && !sender.hasPermission(execAnnotation.permission())) {
+                    continue;
+                }
+
+                if (!displayedCommands.add(subLabel)) {
+                    continue;
+                }
+
+                StringBuilder usage = new StringBuilder("/" + label + " " + subLabel);
+                boolean hasParameters = false;
+
+                for (Parameter parameter : m.getParameters()) {
+                    if (parameter.isAnnotationPresent(CommandParameter.class)) {
+                        hasParameters = true;
+                        CommandParameter paramAnnotation = parameter.getAnnotation(CommandParameter.class);
+                        usage.append(paramAnnotation.required() ? " <" : " [")
+                                .append(paramAnnotation.name())
+                                .append(paramAnnotation.required() ? ">" : "]");
                     }
+                }
 
-                    if (!execAnnotation.permission().isEmpty() && !sender.hasPermission(execAnnotation.permission())) {
-                        continue;
-                    }
+                usage.append(" - ").append(execAnnotation.description());
+                Component message = MessageComponent.formatMessage(BukkitInitializer.getInstance().getConfig(), "command_arg_help", usage.toString());
 
-                    StringBuilder usage = new StringBuilder("/" + label + " " + subLabel);
-                    boolean hasParameters = false;
+                if (hasParameters) {
+                    message = message.clickEvent(ClickEvent.suggestCommand("/" + label + " " + subLabel));
+                } else {
+                    message = message.clickEvent(ClickEvent.runCommand("/" + label + " " + subLabel));
+                }
 
-                    for (Parameter parameter : m.getParameters()) {
-                        if (parameter.isAnnotationPresent(CommandParameter.class)) {
-                            hasParameters = true;
-                            CommandParameter paramAnnotation = parameter.getAnnotation(CommandParameter.class);
-                            usage.append(paramAnnotation.required() ? " <" : " [")
-                                    .append(paramAnnotation.name())
-                                    .append(paramAnnotation.required() ? ">" : "]");
-                        }
-                    }
-
-                    usage.append(" - ").append(execAnnotation.description());
-                    Component message = MessageComponent.formatMessage(BukkitInitializer.getInstance().getConfig(), "command_arg_help", usage.toString());
-
-                    if (hasParameters) {
-                        message = message.clickEvent(ClickEvent.suggestCommand("/" + label + " " + subLabel));
-                    } else {
-                        message = message.clickEvent(ClickEvent.runCommand("/" + label + " " + subLabel));
-                    }
-
-                    if (sender instanceof Player) {
-                        ((Player) sender).sendMessage(message);
-                    } else {
-                        sender.sendMessage(message);
-                    }
+                if (sender instanceof Player) {
+                    ((Player) sender).sendMessage(message);
+                } else {
+                    sender.sendMessage(message);
                 }
             }
         }
     }
-
-
 
     private boolean handleSubCommandExecution(CommandSender sender, String label, String[] args) {
         boolean executed = false;
