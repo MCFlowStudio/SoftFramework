@@ -1,0 +1,137 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "com.softhub",
+    "module": "soft-framework",
+    "version": "1.0.3",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "8.4"
+    }
+  },
+  "variants": [
+    {
+      "name": "apiElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.environment": "standard-jvm",
+        "org.gradle.jvm.version": 21,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-api",
+        "org.jetbrains.kotlin.platform.type": "jvm"
+      },
+      "dependencies": [
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib-jdk8",
+          "version": {
+            "requires": "1.7.21"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "soft-framework-1.0.3.jar",
+          "url": "soft-framework-1.0.3.jar",
+          "size": 86418,
+          "sha512": "21ccf8d38633c792df4d1042303c747085c0b6e29fa6f61a314a0b1b4ddb5b978c56bba5329ad8b64c39ae2e257553f94b421a29533a18dd3f26e5a4db6209a7",
+          "sha256": "4febce4940e4a8c4456ae99aa93e8863ee56d6c342c259a35a592229ad829994",
+          "sha1": "9bf956c2d7211bf49ca357da2dffa0c41a10583d",
+          "md5": "058723a1cd4f554e76d927e5ee53266e"
+        }
+      ]
+    },
+    {
+      "name": "runtimeElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.environment": "standard-jvm",
+        "org.gradle.jvm.version": 21,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime",
+        "org.jetbrains.kotlin.platform.type": "jvm"
+      },
+      "dependencies": [
+        {
+          "group": "org.yaml",
+          "module": "snakeyaml",
+          "version": {
+            "requires": "1.33"
+          }
+        },
+        {
+          "group": "mysql",
+          "module": "mysql-connector-java",
+          "version": {
+            "requires": "8.0.33"
+          }
+        },
+        {
+          "group": "com.zaxxer",
+          "module": "HikariCP",
+          "version": {
+            "requires": "5.0.1"
+          }
+        },
+        {
+          "group": "io.lettuce",
+          "module": "lettuce-core",
+          "version": {
+            "requires": "6.3.2.RELEASE"
+          }
+        },
+        {
+          "group": "org.xerial",
+          "module": "sqlite-jdbc",
+          "version": {
+            "requires": "3.34.0"
+          }
+        },
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib-jdk8",
+          "version": {
+            "requires": "1.7.21"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "soft-framework-1.0.3.jar",
+          "url": "soft-framework-1.0.3.jar",
+          "size": 86418,
+          "sha512": "21ccf8d38633c792df4d1042303c747085c0b6e29fa6f61a314a0b1b4ddb5b978c56bba5329ad8b64c39ae2e257553f94b421a29533a18dd3f26e5a4db6209a7",
+          "sha256": "4febce4940e4a8c4456ae99aa93e8863ee56d6c342c259a35a592229ad829994",
+          "sha1": "9bf956c2d7211bf49ca357da2dffa0c41a10583d",
+          "md5": "058723a1cd4f554e76d927e5ee53266e"
+        }
+      ]
+    },
+    {
+      "name": "shadowRuntimeElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "shadowed",
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "soft-framework-1.0.3-all.jar",
+          "url": "soft-framework-1.0.3-all.jar",
+          "size": 20133208,
+          "sha512": "59e19dafdde39acc8024d340a8ae26770b46b124eb430666f882fc543db8e4d6ac7d68c9bca8a33e4bcb464f2e1940ce4a9b866a68dcfce9bcbe588245a50e6f",
+          "sha256": "e9181e460a431785401d84abe957d11e35aacee881a8dfe85a181d7ee8f7aab4",
+          "sha1": "a1b3d681a010c3d2cd829417b6a25c08ce3a67c4",
+          "md5": "023f36960d826e153feb5edfff8f8788"
+        }
+      ]
+    }
+  ]
+}

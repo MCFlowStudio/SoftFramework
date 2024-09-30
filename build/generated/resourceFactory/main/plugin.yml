@@ -1,0 +1,11 @@
+api-version: '1.20'
+name: SoftFramework
+version: 1.0.3
+main: com.softhub.softframework.BukkitInitializer
+load: STARTUP
+authors:
+- minhyeok
+libraries:
+- org.jetbrains.kotlin:kotlin-stdlib:1.7.21
+- org.jetbrains.kotlin:kotlin-reflect:1.7.21
+- org.jetbrains.kotlin:kotlin-test:1.7.21

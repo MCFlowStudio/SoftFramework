@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/SoftFramework.iml" filepath="$PROJECT_DIR$/SoftFramework.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/SoftFramework.main.iml" filepath="$PROJECT_DIR$/.idea/modules/SoftFramework.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/soft-framework.iml" filepath="$PROJECT_DIR$/soft-framework.iml" />
     </modules>
   </component>

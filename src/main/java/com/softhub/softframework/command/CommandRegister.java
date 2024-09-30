@@ -109,7 +109,7 @@ public class CommandRegister {
             Constructor<PluginCommand> c = PluginCommand.class.getDeclaredConstructor(String.class, Plugin.class);
             c.setAccessible(true);
             PluginCommand pluginCommand = c.newInstance(name, plugin);
-            commandMap.register(name, pluginCommand);
+            commandMap.register(plugin.getName(), pluginCommand);
             return pluginCommand;
         } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | java.lang.reflect.InvocationTargetException e) {
             e.printStackTrace();

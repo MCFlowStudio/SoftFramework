@@ -1,6 +1,7 @@
 package com.softhub.softframework.inventory;
 
 import com.softhub.softframework.item.SimpleItem;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -24,26 +25,35 @@ public class SimpleInventoryListener implements Listener {
                 if (event.getClick().isKeyboardClick() && event.getHotbarButton() != -1) {
                     Player player = (Player) event.getWhoClicked();
                     ItemStack hotbarItem = player.getInventory().getItem(event.getHotbarButton());
-                    if (hotbarItem != null) {
-                        clickedItem = hotbarItem;
-                    }
+
+                    clickedItem = event.getClickedInventory().getItem(event.getSlot());
                 }
 
                 SimpleClickEvent clickEvent = new SimpleClickEvent(
                         (Player) event.getWhoClicked(),
                         event.getSlot(),
+                        event.getRawSlot(),
                         clickedItem != null ? new SimpleItem(clickedItem) : new SimpleItem(Material.AIR),
                         cursorItem != null ? new SimpleItem(cursorItem) : new SimpleItem(Material.AIR),
                         simpleInventory,
-                        event.getInventory()
+                        event.getInventory(),
+                        event.getClick()
                 );
-                provider.onClick(clickEvent);
-                if (clickEvent.isCancelled()) {
+
+                try {
+                    provider.onClick(clickEvent);
+                    if (clickEvent.isCancelled()) {
+                        event.setCancelled(true);
+                    }
+                } catch (Exception e) {
                     event.setCancelled(true);
+                    Bukkit.getLogger().severe("InventoryClickEvent 처리 중 오류 발생: " + e.getMessage());
+                    e.printStackTrace();
                 }
             }
         }
     }
+
 
     @EventHandler
     public void onInventoryClose(InventoryCloseEvent event) {
@@ -58,6 +68,7 @@ public class SimpleInventoryListener implements Listener {
                         event.getInventory()
                 );
                 provider.onClose(closeEvent);
+                simpleInventory.unregister();
             }
         }
     }

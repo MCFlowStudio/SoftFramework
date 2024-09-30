@@ -34,8 +34,6 @@ public final class BukkitInitializer extends JavaPlugin {
         CommandRegister.registerCommands(new SoftCommand());
 
         getLogger().info("SoftFramework가 활성화 되었습니다.");
-        getLogger().info("플러그인 무료 다운로드, 플러그인 문의는 https://discord.gg/TnBHpwAJcc");
-        getLogger().info("디스코드 방에서 받을 수 있습니다.");
     }
 
     @Override

@@ -34,8 +34,8 @@ public class CommandTree {
         this.plugin = plugin;
         this.commandAnnotation = cls.getAnnotation(Command.class);
 
-        if (commandAnnotation.tabCompleterProvider() != TabCompleterProvider.class) {
-            this.tabCompleterProvider = initTabCompleterProvider(commandAnnotation.tabCompleterProvider());
+        if (TabCompleterProvider.class.isAssignableFrom(cls)) {
+            this.tabCompleterProvider = (TabCompleterProvider) commandInstance;
         } else {
             this.tabCompleterProvider = null;
         }
@@ -50,11 +50,9 @@ public class CommandTree {
             }
             if (method.isAnnotationPresent(CommandExecutor.class)) {
                 CommandExecutor executorAnnotation = method.getAnnotation(CommandExecutor.class);
-                if (!executorAnnotation.hideSuggestion()) {
-                    subCommandLabels.add(executorAnnotation.label());
-                    if (executorAnnotation.isOp()) {
-                        opSubCommandLabels.add(executorAnnotation.label());
-                    }
+                subCommandLabels.add(executorAnnotation.label());
+                if (executorAnnotation.isOp()) {
+                    opSubCommandLabels.add(executorAnnotation.label());
                 }
             }
         }
@@ -122,9 +120,8 @@ public class CommandTree {
                     continue;
                 }
 
-                if (!displayedCommands.add(subLabel)) {
+                if (!displayedCommands.add(subLabel) || (!sender.isOp() && execAnnotation.hideSuggestion()))
                     continue;
-                }
 
                 StringBuilder usage = new StringBuilder("/" + label + " " + subLabel);
                 boolean hasParameters = false;
@@ -139,7 +136,7 @@ public class CommandTree {
                     }
                 }
 
-                usage.append(" - ").append(execAnnotation.description());
+                usage.append(" <gray>").append(execAnnotation.description());
                 Component message = MessageComponent.formatMessage(BukkitInitializer.getInstance().getConfig(), "command_arg_help", usage.toString());
 
                 if (hasParameters) {
@@ -278,6 +275,8 @@ public class CommandTree {
                                         if (!execAnnotation.permission().isEmpty() && !sender.hasPermission(execAnnotation.permission())) {
                                             return false;
                                         }
+                                        if (!sender.isOp() && execAnnotation.hideSuggestion())
+                                            return false;
                                     }
                                 }
                             }
@@ -321,14 +320,5 @@ public class CommandTree {
                     .collect(Collectors.toList());
         }
         return null;
-    }
-
-    private TabCompleterProvider initTabCompleterProvider(Class<? extends TabCompleterProvider> providerClass) {
-        try {
-            return providerClass.getDeclaredConstructor().newInstance();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
     }
 }
