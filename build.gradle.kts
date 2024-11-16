@@ -48,10 +48,10 @@ dependencies {
 }
 
 bukkitPluginYaml {
-    main = "com.softhub.softframework.BukkitInitializer"
+    main = "com.softhub.softframework.BukkitFrameworkPlugin"
     load = BukkitPluginYaml.PluginLoadOrder.STARTUP
     authors.add("minhyeok")
-    apiVersion = "1.20"
+    apiVersion = "1.21"
     libraries.add("org.jetbrains.kotlin:kotlin-stdlib:1.7.21")
     libraries.add("org.jetbrains.kotlin:kotlin-reflect:1.7.21")
     libraries.add("org.jetbrains.kotlin:kotlin-test:1.7.21")
