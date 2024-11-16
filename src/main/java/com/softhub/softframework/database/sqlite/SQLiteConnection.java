@@ -1,6 +1,6 @@
 package com.softhub.softframework.database.sqlite;
 
-import com.softhub.softframework.BukkitInitializer;
+import com.softhub.softframework.BukkitFrameworkPlugin;
 import org.sqlite.SQLiteDataSource;
 
 import java.io.File;
@@ -13,7 +13,7 @@ public class SQLiteConnection {
     public static void initialize() {
         if (dataSource == null) {
             dataSource = new SQLiteDataSource();
-            File dataFolder = BukkitInitializer.getInstance().getDataFolder();
+            File dataFolder = BukkitFrameworkPlugin.getInstance().getDataFolder();
             if (!dataFolder.exists()) {
                 dataFolder.mkdirs();
             }

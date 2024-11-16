@@ -5,11 +5,14 @@ import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 
 public class SimpleClickEvent {
+    @Getter
+    private final InventoryClickEvent event;
     @Getter
     private final Player player;
     @Getter
@@ -29,7 +32,10 @@ public class SimpleClickEvent {
     @Getter
     private final ClickType clickType;  // 클릭 타입 추가
 
-    public SimpleClickEvent(Player player, int slot, int rawSlot, SimpleItem clickItem, SimpleItem cursorItem, SimpleInventory simpleInventory, Inventory inventory, ClickType clickType) {
+    public SimpleClickEvent(
+            InventoryClickEvent event, Player player, int slot, int rawSlot, SimpleItem clickItem, SimpleItem cursorItem, SimpleInventory simpleInventory, Inventory inventory, ClickType clickType
+    ) {
+        this.event = event;
         this.player = player;
         this.slot = slot;
         this.rawSlot = rawSlot;

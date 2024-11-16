@@ -1,6 +1,6 @@
 package com.softhub.softframework.config;
 
-import com.softhub.softframework.BukkitInitializer;
+import com.softhub.softframework.BukkitFrameworkPlugin;
 import com.softhub.softframework.database.redis.RedisManager;
 import io.lettuce.core.pubsub.StatefulRedisPubSubConnection;
 import lombok.Getter;
@@ -18,7 +18,7 @@ public class RedisConfig {
     private static String password;
 
     public static void init() {
-        FileConfiguration config = BukkitInitializer.getInstance().getConfig();
+        FileConfiguration config = BukkitFrameworkPlugin.getInstance().getConfig();
         enabled = config.getBoolean("database.redis.enabled", false) ? true : false;
         host = config.getString("database.redis.host", "localhost");
         port = config.getString("database.redis.port", "6379");

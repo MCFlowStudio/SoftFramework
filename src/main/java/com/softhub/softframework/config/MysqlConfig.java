@@ -1,6 +1,6 @@
 package com.softhub.softframework.config;
 
-import com.softhub.softframework.BukkitInitializer;
+import com.softhub.softframework.BukkitFrameworkPlugin;
 import com.softhub.softframework.database.mysql.MysqlConnection;
 import com.softhub.softframework.database.mysql.MysqlManager;
 import com.softhub.softframework.database.sqlite.SQLiteConnection;
@@ -26,7 +26,7 @@ public class MysqlConfig {
     private static Integer poolsize;
 
     public static void init() {
-        FileConfiguration config = BukkitInitializer.getInstance().getConfig();
+        FileConfiguration config = BukkitFrameworkPlugin.getInstance().getConfig();
         enabled = config.getBoolean("database.mysql.enabled")? true : false;
         host = config.getString("database.mysql.host", "localhost");
         port = config.getString("database.mysql.port", "3306");
@@ -36,10 +36,10 @@ public class MysqlConfig {
         poolsize = config.getInt("database.mysql.poolsize", 10);
         if (enabled) {
             MysqlConnection.initialize(host, port, password, username, database, poolsize);
-            BukkitInitializer.setDatabaseManager(new MysqlManager());
+            BukkitFrameworkPlugin.setDatabaseManager(new MysqlManager());
         } else {
             SQLiteConnection.initialize();
-            BukkitInitializer.setDatabaseManager(new SQLiteManager());
+            BukkitFrameworkPlugin.setDatabaseManager(new SQLiteManager());
         }
     }
 

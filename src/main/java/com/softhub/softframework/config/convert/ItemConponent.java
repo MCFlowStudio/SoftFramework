@@ -1,6 +1,6 @@
 package com.softhub.softframework.config.convert;
 
-import com.softhub.softframework.BukkitInitializer;
+import com.softhub.softframework.BukkitFrameworkPlugin;
 import com.softhub.softframework.item.SimpleItem;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -28,7 +28,7 @@ public class ItemConponent {
             for (int i = 0; i < args.length; i++) {
                 name = name.replace("%" + (i + 1) + "%", args[i] != null ? args[i].toString() : "");
             }
-            meta.displayName(BukkitInitializer.getMiniMessage().deserialize(name).decoration(TextDecoration.ITALIC, false));
+            meta.displayName(BukkitFrameworkPlugin.getMiniMessage().deserialize(name).decoration(TextDecoration.ITALIC, false));
 
             List<String> loreLines = config.getStringList(path + "lore");
             List<Component> lore = loreLines.stream()
@@ -36,7 +36,7 @@ public class ItemConponent {
                         for (int i = 0; i < args.length; i++) {
                             line = line.replace("%" + (i + 1) + "%", args[i] != null ? args[i].toString() : "");
                         }
-                        return BukkitInitializer.getMiniMessage().deserialize(line).decoration(TextDecoration.ITALIC, false);
+                        return BukkitFrameworkPlugin.getMiniMessage().deserialize(line).decoration(TextDecoration.ITALIC, false);
                     })
                     .collect(Collectors.toList());
 
@@ -76,7 +76,7 @@ public class ItemConponent {
             for (int i = 0; i < args.length; i++) {
                 name = name.replace("%" + (i + 1) + "%", args[i] != null ? args[i].toString() : "");
             }
-            originalMeta.displayName(BukkitInitializer.getMiniMessage().deserialize(name).decoration(TextDecoration.ITALIC, false));
+            originalMeta.displayName(BukkitFrameworkPlugin.getMiniMessage().deserialize(name).decoration(TextDecoration.ITALIC, false));
 
             List<String> loreLines = config.getStringList(path + "lore");
             List<Component> lore = loreLines.stream()
@@ -84,7 +84,7 @@ public class ItemConponent {
                         for (int i = 0; i < args.length; i++) {
                             line = line.replace("%" + (i + 1) + "%", args[i] != null ? args[i].toString() : "");
                         }
-                        return BukkitInitializer.getMiniMessage().deserialize(line).decoration(TextDecoration.ITALIC, false);
+                        return BukkitFrameworkPlugin.getMiniMessage().deserialize(line).decoration(TextDecoration.ITALIC, false);
                     })
                     .collect(Collectors.toList());
 

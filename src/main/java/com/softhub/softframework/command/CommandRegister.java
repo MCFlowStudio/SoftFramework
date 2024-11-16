@@ -1,6 +1,6 @@
 package com.softhub.softframework.command;
 
-import com.softhub.softframework.BukkitInitializer;
+import com.softhub.softframework.BukkitFrameworkPlugin;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandMap;
 import org.bukkit.command.PluginCommand;
@@ -14,7 +14,7 @@ import java.util.Map;
 
 public class CommandRegister {
 
-    private static JavaPlugin plugin = JavaPlugin.getProvidingPlugin(BukkitInitializer.class);
+    private static JavaPlugin plugin = JavaPlugin.getProvidingPlugin(BukkitFrameworkPlugin.class);
     public static final Map<String, PluginCommand> registeredCommands = new HashMap<>();
 
     public static void registerCommands(Object commandInstance) {

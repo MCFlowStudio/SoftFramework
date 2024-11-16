@@ -1,6 +1,6 @@
 package com.softhub.softframework.command;
 
-import com.softhub.softframework.BukkitInitializer;
+import com.softhub.softframework.BukkitFrameworkPlugin;
 import com.softhub.softframework.config.convert.MessageComponent;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
@@ -61,7 +61,7 @@ public class CommandTree {
     public void setupMainCommand(PluginCommand mainCommand) {
         mainCommand.setDescription(commandAnnotation.description());
         mainCommand.setUsage(commandAnnotation.usage());
-        mainCommand.setPermission(commandAnnotation.permission());
+        mainCommand.setPermission(commandAnnotation.isOp() ? "op" : commandAnnotation.permission());
         mainCommand.setAliases(Arrays.asList(commandAnnotation.aliases()));
         mainCommand.setExecutor(this::executeCommand);
         mainCommand.setTabCompleter(this::getTabCompletions);
@@ -73,13 +73,18 @@ public class CommandTree {
             return true;
         }
 
+        if (commandAnnotation.isOp() && !sender.isOp()) {
+            sender.sendMessage(MessageComponent.formatMessage(BukkitFrameworkPlugin.getInstance().getConfig(), "no_permission"));
+            return true;
+        }
+
         if (args.length == 0 && helpMethod[0] != null) {
             try {
                 if (helpMethod[0].getParameterTypes()[0].equals(Player.class)) {
                     if (sender instanceof Player) {
                         helpMethod[0].invoke(commandInstance, (Player) sender);
                     } else {
-                        sender.sendMessage(MessageComponent.formatMessage(BukkitInitializer.getInstance().getConfig(), "no_console"));
+                        sender.sendMessage(MessageComponent.formatMessage(BukkitFrameworkPlugin.getInstance().getConfig(), "no_console"));
                     }
                 } else {
                     helpMethod[0].invoke(commandInstance, sender);
@@ -104,7 +109,7 @@ public class CommandTree {
     }
 
     private void sendCommandHelp(CommandSender sender, String label) {
-        sender.sendMessage(MessageComponent.formatMessage(BukkitInitializer.getInstance().getConfig(), "command_help"));
+        sender.sendMessage(MessageComponent.formatMessage(BukkitFrameworkPlugin.getInstance().getConfig(), "command_help"));
         Set<String> displayedCommands = new HashSet<>();
 
         for (Method m : cls.getDeclaredMethods()) {
@@ -137,7 +142,7 @@ public class CommandTree {
                 }
 
                 usage.append(" <gray>").append(execAnnotation.description());
-                Component message = MessageComponent.formatMessage(BukkitInitializer.getInstance().getConfig(), "command_arg_help", usage.toString());
+                Component message = MessageComponent.formatMessage(BukkitFrameworkPlugin.getInstance().getConfig(), "command_arg_help", usage.toString());
 
                 if (hasParameters) {
                     message = message.clickEvent(ClickEvent.suggestCommand("/" + label + " " + subLabel));
@@ -161,15 +166,15 @@ public class CommandTree {
                 CommandExecutor execAnnotation = execMethod.getAnnotation(CommandExecutor.class);
                 if (args[0].equalsIgnoreCase(execAnnotation.label())) {
                     if (execAnnotation.isOp() && !sender.isOp()) {
-                        sender.sendMessage(MessageComponent.formatMessage(BukkitInitializer.getInstance().getConfig(), "no_permission"));
+                        sender.sendMessage(MessageComponent.formatMessage(BukkitFrameworkPlugin.getInstance().getConfig(), "no_permission"));
                         return true;
                     }
                     if (!execAnnotation.permission().isEmpty() && !sender.hasPermission(execAnnotation.permission())) {
-                        sender.sendMessage(MessageComponent.formatMessage(BukkitInitializer.getInstance().getConfig(), "no_permission"));
+                        sender.sendMessage(MessageComponent.formatMessage(BukkitFrameworkPlugin.getInstance().getConfig(), "no_permission"));
                         return true;
                     }
                     if (!execAnnotation.consoleAvailable() && !(sender instanceof Player)) {
-                        sender.sendMessage(MessageComponent.formatMessage(BukkitInitializer.getInstance().getConfig(), "no_console"));
+                        sender.sendMessage(MessageComponent.formatMessage(BukkitFrameworkPlugin.getInstance().getConfig(), "no_console"));
                         return true;
                     }
                     try {
@@ -179,7 +184,7 @@ public class CommandTree {
                         if (parameters[0].equals(Player.class) && sender instanceof Player) {
                             invokeArgs[0] = sender;
                         } else if (!execAnnotation.consoleAvailable() && !(sender instanceof Player)) {
-                            sender.sendMessage(MessageComponent.formatMessage(BukkitInitializer.getInstance().getConfig(), "no_console"));
+                            sender.sendMessage(MessageComponent.formatMessage(BukkitFrameworkPlugin.getInstance().getConfig(), "no_console"));
                             return true;
                         } else {
                             invokeArgs[0] = sender;
@@ -198,7 +203,7 @@ public class CommandTree {
                                     String paramValue = args[index];
                                     invokeArgs[i] = convertParameterType(paramValue, parameter.getType());
                                 } else if (paramAnnotation.required()) {
-                                    sender.sendMessage(MessageComponent.formatMessage(BukkitInitializer.getInstance().getConfig(), "no_args", paramAnnotation.name()));
+                                    sender.sendMessage(MessageComponent.formatMessage(BukkitFrameworkPlugin.getInstance().getConfig(), "no_args", paramAnnotation.name()));
                                     return true;
                                 }
                             } else {
@@ -206,13 +211,13 @@ public class CommandTree {
                             }
                         }
                         if (args.length < requiredArgs) {
-                            sender.sendMessage(MessageComponent.formatMessage(BukkitInitializer.getInstance().getConfig(), "no_arg"));
+                            sender.sendMessage(MessageComponent.formatMessage(BukkitFrameworkPlugin.getInstance().getConfig(), "no_arg"));
                             return true;
                         }
                         execMethod.invoke(commandInstance, invokeArgs);
                         executed = true;
                     } catch (NumberFormatException e) {
-                        sender.sendMessage(MessageComponent.formatMessage(BukkitInitializer.getInstance().getConfig(), "no_format"));
+                        sender.sendMessage(MessageComponent.formatMessage(BukkitFrameworkPlugin.getInstance().getConfig(), "no_format"));
                         return true;
                     } catch (Exception e) {
                         e.printStackTrace();

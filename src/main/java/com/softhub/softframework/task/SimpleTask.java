@@ -1,6 +1,6 @@
 package com.softhub.softframework.task;
 
-import com.softhub.softframework.BukkitInitializer;
+import com.softhub.softframework.BukkitFrameworkPlugin;
 import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -12,13 +12,13 @@ public class SimpleTask {
     private static ConcurrentMap<String, BukkitTask> tasks = new ConcurrentHashMap<>();
 
     public static BukkitTask asyncRepeating(String taskId, Runnable runnable, long delay, long period) {
-        BukkitTask task = Bukkit.getScheduler().runTaskTimerAsynchronously(BukkitInitializer.getInstance(), runnable, delay, period);
+        BukkitTask task = Bukkit.getScheduler().runTaskTimerAsynchronously(BukkitFrameworkPlugin.getInstance(), runnable, delay, period);
         tasks.put(taskId, task);
         return task;
     }
 
     public static BukkitTask syncRepeating(String taskId, Runnable runnable, long delay, long period) {
-        BukkitTask task = Bukkit.getScheduler().runTaskTimer(BukkitInitializer.getInstance(), runnable, delay, period);
+        BukkitTask task = Bukkit.getScheduler().runTaskTimer(BukkitFrameworkPlugin.getInstance(), runnable, delay, period);
         tasks.put(taskId, task);
         return task;
     }

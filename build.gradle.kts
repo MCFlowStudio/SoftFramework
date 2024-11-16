@@ -48,7 +48,7 @@ dependencies {
 }
 
 bukkitPluginYaml {
-    main = "com.softhub.softframework.BukkitInitializer"
+    main = "com.softhub.softframework.BukkitFrameworkPlugin"
     load = BukkitPluginYaml.PluginLoadOrder.STARTUP
     authors.add("minhyeok")
     apiVersion = "1.20"
