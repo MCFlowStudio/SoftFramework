@@ -1,9 +1,8 @@
 package com.softhub.softframework.item;
 
-import com.softhub.softframework.BukkitInitializer;
+import com.softhub.softframework.BukkitFrameworkPlugin;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
@@ -125,7 +124,7 @@ public class SimpleItem extends ItemStack implements Serializable {
         ItemMeta meta = this.getItemMeta();
         if (meta != null) {
             PersistentDataContainer container = meta.getPersistentDataContainer();
-            NamespacedKey namespacedKey = new NamespacedKey(BukkitInitializer.getInstance(), key);
+            NamespacedKey namespacedKey = new NamespacedKey(BukkitFrameworkPlugin.getInstance(), key);
             container.set(namespacedKey, type, value);
             this.setItemMeta(meta);
         }
@@ -135,7 +134,7 @@ public class SimpleItem extends ItemStack implements Serializable {
         ItemMeta meta = this.getItemMeta();
         if (meta != null) {
             PersistentDataContainer container = meta.getPersistentDataContainer();
-            NamespacedKey namespacedKey = new NamespacedKey(BukkitInitializer.getInstance(), key);
+            NamespacedKey namespacedKey = new NamespacedKey(BukkitFrameworkPlugin.getInstance(), key);
             return container.get(namespacedKey, type);
         }
         return null;
@@ -145,7 +144,7 @@ public class SimpleItem extends ItemStack implements Serializable {
         ItemMeta meta = this.getItemMeta();
         if (meta != null) {
             PersistentDataContainer container = meta.getPersistentDataContainer();
-            NamespacedKey namespacedKey = new NamespacedKey(BukkitInitializer.getInstance(), key);
+            NamespacedKey namespacedKey = new NamespacedKey(BukkitFrameworkPlugin.getInstance(), key);
             container.remove(namespacedKey);
             this.setItemMeta(meta);
         }
@@ -155,7 +154,7 @@ public class SimpleItem extends ItemStack implements Serializable {
         ItemMeta meta = this.getItemMeta();
         if (meta != null) {
             PersistentDataContainer container = meta.getPersistentDataContainer();
-            NamespacedKey namespacedKey = new NamespacedKey(BukkitInitializer.getInstance(), key);
+            NamespacedKey namespacedKey = new NamespacedKey(BukkitFrameworkPlugin.getInstance(), key);
             return container.has(namespacedKey, type);
         }
         return false;

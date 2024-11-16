@@ -9,7 +9,7 @@ plugins {
 }
 
 group = "com.softhub"
-version = "1.0.3"
+version = "2.0.0-SNAPSHOT"
 
 repositories {
     mavenLocal()
@@ -26,7 +26,7 @@ configurations.all {
 }
 
 dependencies {
-    compileOnly("io.papermc.paper:paper-api:1.20.1-R0.1-SNAPSHOT")
+    compileOnly("io.papermc.paper:paper-api:1.21-R0.1-SNAPSHOT")
     implementation("org.yaml:snakeyaml:1.33")
 
     implementation("mysql:mysql-connector-java:8.0.33")
@@ -80,7 +80,7 @@ publishing {
         create<MavenPublication>("maven") {
             groupId = "com.softhub"
             artifactId = "soft-framework"
-            version = "1.0.3"
+            version = "2.0.0-SNAPSHOT"
 
             from(components["java"])
         }

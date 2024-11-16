@@ -1,6 +1,6 @@
 package com.softhub.softframework.command.defaultcommand;
 
-import com.softhub.softframework.BukkitInitializer;
+import com.softhub.softframework.BukkitFrameworkPlugin;
 import com.softhub.softframework.command.Command;
 import com.softhub.softframework.command.CommandExecutor;
 import com.softhub.softframework.config.MysqlConfig;
@@ -14,7 +14,7 @@ public class SoftCommand {
 
     @CommandExecutor(label = "리로드", description = "콘피그를 다시 불러옵니다.", isOp = true)
     public boolean onReload(CommandSender sender, String[] args) {
-        BukkitInitializer.getInstance().reloadConfig();
+        BukkitFrameworkPlugin.getInstance().reloadConfig();
         if (MysqlConfig.isEnabled()) {
             MysqlConnection.closePool();
             MysqlConfig.init();

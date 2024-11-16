@@ -9,7 +9,7 @@ public class SoftFramework {
         return MysqlConfig.isEnabled();
     }
     public static DatabaseManager getDatabaseManager() {
-        return BukkitInitializer.getDatabaseManager();
+        return BukkitFrameworkPlugin.getDatabaseManager();
     }
 
 }

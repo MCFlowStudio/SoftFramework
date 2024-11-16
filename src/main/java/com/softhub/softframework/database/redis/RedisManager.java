@@ -2,7 +2,7 @@ package com.softhub.softframework.database.redis;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
-import com.softhub.softframework.BukkitInitializer;
+import com.softhub.softframework.BukkitFrameworkPlugin;
 import com.softhub.softframework.database.redis.message.ProtocolMessage;
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.RedisFuture;
@@ -122,7 +122,7 @@ public class RedisManager {
     }
 
     public void publishMessage(String channel, ProtocolMessage message) {
-        String jsonMessage = BukkitInitializer.getGson().toJson(message);
+        String jsonMessage = BukkitFrameworkPlugin.getGson().toJson(message);
         RedisAsyncCommands<String, String> asyncCommands = RedisManager.getInstance().getAsyncCommands();
         asyncCommands.publish(channel, jsonMessage).exceptionally(e -> {
             e.printStackTrace();
@@ -130,7 +130,7 @@ public class RedisManager {
         });
     }
     public void publishMessage(String channel, Object message) {
-        String jsonMessage = BukkitInitializer.getGson().toJson(message);
+        String jsonMessage = BukkitFrameworkPlugin.getGson().toJson(message);
         RedisAsyncCommands<String, String> asyncCommands = RedisManager.getInstance().getAsyncCommands();
         asyncCommands.publish(channel, jsonMessage).exceptionally(e -> {
             e.printStackTrace();
@@ -146,7 +146,7 @@ public class RedisManager {
             public void message(String channel, String message) {
                 if (channel.equals(RESPONSE_CHANNEL)) {
                     try {
-                        JsonObject jsonObject = BukkitInitializer.getGson().fromJson(message, JsonObject.class);
+                        JsonObject jsonObject = BukkitFrameworkPlugin.getGson().fromJson(message, JsonObject.class);
                         if (jsonObject != null) {
                             CompletableFuture<String> future = responseFutures.get(jsonObject.get("requestId").getAsString());
                             if (future != null) {
@@ -168,7 +168,7 @@ public class RedisManager {
 
         responseFutures.put(requestId, future);
 
-        String jsonMessage = BukkitInitializer.getGson().toJson(message);
+        String jsonMessage = BukkitFrameworkPlugin.getGson().toJson(message);
         RedisAsyncCommands<String, String> asyncCommands = getAsyncCommands();
         asyncCommands.publish(channel, jsonMessage).whenComplete((result, ex) -> {
             if (ex != null) {

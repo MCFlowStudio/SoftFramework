@@ -30,6 +30,7 @@ public class SimpleInventoryListener implements Listener {
                 }
 
                 SimpleClickEvent clickEvent = new SimpleClickEvent(
+                        event,
                         (Player) event.getWhoClicked(),
                         event.getSlot(),
                         event.getRawSlot(),
@@ -63,6 +64,7 @@ public class SimpleInventoryListener implements Listener {
 
             if (provider != null) {
                 SimpleCloseEvent closeEvent = new SimpleCloseEvent(
+                        event,
                         (Player) event.getPlayer(),
                         simpleInventory,
                         event.getInventory()

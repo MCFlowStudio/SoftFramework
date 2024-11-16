@@ -12,10 +12,10 @@ import lombok.Setter;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.plugin.java.JavaPlugin;
 
-public final class BukkitInitializer extends JavaPlugin {
+public final class BukkitFrameworkPlugin extends JavaPlugin {
 
     @Getter
-    private static BukkitInitializer instance;
+    private static BukkitFrameworkPlugin instance;
     @Getter
     private static Gson gson = new Gson();
     @Getter
