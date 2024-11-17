@@ -9,7 +9,7 @@ plugins {
 }
 
 group = "com.softhub"
-version = "1.0.3"
+version = "1.0.3-SNAPSHOT"
 
 repositories {
     mavenLocal()
@@ -26,7 +26,7 @@ configurations.all {
 }
 
 dependencies {
-    compileOnly("io.papermc.paper:paper-api:1.20.1-R0.1-SNAPSHOT")
+    compileOnly("io.papermc.paper:paper-api:1.19.2-R0.1-SNAPSHOT")
     implementation("org.yaml:snakeyaml:1.33")
 
     implementation("mysql:mysql-connector-java:8.0.33")
@@ -51,7 +51,7 @@ bukkitPluginYaml {
     main = "com.softhub.softframework.BukkitFrameworkPlugin"
     load = BukkitPluginYaml.PluginLoadOrder.STARTUP
     authors.add("minhyeok")
-    apiVersion = "1.20"
+    apiVersion = "1.17"
     libraries.add("org.jetbrains.kotlin:kotlin-stdlib:1.7.21")
     libraries.add("org.jetbrains.kotlin:kotlin-reflect:1.7.21")
     libraries.add("org.jetbrains.kotlin:kotlin-test:1.7.21")
@@ -80,7 +80,7 @@ publishing {
         create<MavenPublication>("maven") {
             groupId = "com.softhub"
             artifactId = "soft-framework"
-            version = "1.0.3"
+            version = "1.0.3-SNAPSHOT"
 
             from(components["java"])
         }

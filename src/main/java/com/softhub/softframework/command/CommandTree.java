@@ -161,6 +161,7 @@ public class CommandTree {
 
     private boolean handleSubCommandExecution(CommandSender sender, String label, String[] args) {
         boolean executed = false;
+
         for (Method execMethod : cls.getDeclaredMethods()) {
             if (execMethod.isAnnotationPresent(CommandExecutor.class)) {
                 CommandExecutor execAnnotation = execMethod.getAnnotation(CommandExecutor.class);
@@ -181,13 +182,12 @@ public class CommandTree {
                         Parameter[] parameters = execMethod.getParameters();
                         Object[] invokeArgs = new Object[parameters.length];
 
-                        if (parameters[0].equals(Player.class) && sender instanceof Player) {
+                        // 첫 번째 파라미터 설정
+                        if (parameters[0].getType().isAssignableFrom(sender.getClass())) {
                             invokeArgs[0] = sender;
-                        } else if (!execAnnotation.consoleAvailable() && !(sender instanceof Player)) {
+                        } else {
                             sender.sendMessage(MessageComponent.formatMessage(BukkitFrameworkPlugin.getInstance().getConfig(), "no_console"));
                             return true;
-                        } else {
-                            invokeArgs[0] = sender;
                         }
 
                         int requiredArgs = 1;
@@ -196,10 +196,21 @@ public class CommandTree {
                             if (parameter.isAnnotationPresent(CommandParameter.class)) {
                                 CommandParameter paramAnnotation = parameter.getAnnotation(CommandParameter.class);
                                 int index = paramAnnotation.index();
+
                                 if (paramAnnotation.required()) {
                                     requiredArgs++;
                                 }
-                                if (index < args.length) {
+
+                                if (paramAnnotation.type() == CommandParameter.ParamType.STRING_ARRAY) {
+                                    // STRING_ARRAY: 나머지 args를 전달
+                                    String[] remainingArgs = Arrays.copyOfRange(args, index, args.length);
+                                    if (parameter.getType().isArray() && parameter.getType().getComponentType() == String.class) {
+                                        invokeArgs[i] = remainingArgs; // String[]로 전달
+                                    } else {
+                                        throw new IllegalArgumentException("Expected String[] but got " + parameter.getType());
+                                    }
+                                    break; // 이후 매개변수 처리를 중단
+                                } else if (index < args.length) {
                                     String paramValue = args[index];
                                     invokeArgs[i] = convertParameterType(paramValue, parameter.getType());
                                 } else if (paramAnnotation.required()) {
@@ -210,14 +221,21 @@ public class CommandTree {
                                 invokeArgs[i] = getDefault(parameter.getType());
                             }
                         }
+
                         if (args.length < requiredArgs) {
                             sender.sendMessage(MessageComponent.formatMessage(BukkitFrameworkPlugin.getInstance().getConfig(), "no_arg"));
                             return true;
                         }
+
+                        // 메서드 실행
                         execMethod.invoke(commandInstance, invokeArgs);
                         executed = true;
                     } catch (NumberFormatException e) {
                         sender.sendMessage(MessageComponent.formatMessage(BukkitFrameworkPlugin.getInstance().getConfig(), "no_format"));
+                        return true;
+                    } catch (IllegalArgumentException e) {
+                        sender.sendMessage("Argument type mismatch: " + e.getMessage());
+                        e.printStackTrace();
                         return true;
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -227,13 +245,12 @@ public class CommandTree {
                 }
             }
         }
+
         if (!executed) {
             sendCommandHelp(sender, label);
         }
         return true;
     }
-
-
 
     private Object convertParameterType(String value, Class<?> type) {
         if (type == int.class || type == Integer.class) {

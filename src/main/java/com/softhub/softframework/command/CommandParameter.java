@@ -18,7 +18,8 @@ public @interface CommandParameter {
         STRING,
         INTEGER,
         DOUBLE,
-        BOOLEAN
+        BOOLEAN,
+        STRING_ARRAY
     }
 }
 
